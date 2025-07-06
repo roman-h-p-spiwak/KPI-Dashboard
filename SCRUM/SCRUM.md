@@ -16,7 +16,7 @@ This program is designed to automate that which can be easily automated while pr
 
 **Definition of Done:** The application exists as an executable that displays a human usable GUI, allowing the user to create new years, new reports, save and load drafts of reports, input data, modify data, and generate a PDF of the report.
 
-**Time:** The due date is Tuesday, June 15th, ten days away. It might take up to ...
+**Time:** The due date is Tuesday, June 15th. It might take up to ...
 
 **As a stakeholder,** **I want** an application that speeds up the monthly process of downloading, formatting, and inserting data to create a KPI Dashboard report, **so that** I can do more with less time, tedium, and bother.
 
@@ -42,12 +42,9 @@ The general format goes:
 
 - [ ] [Set Up SCRUM Board](#set-up-scrum-board)
 - [ ] [Write Documentation](#write-documentation)
-- [ ] [Config Input](#config-input)
-- [ ] [Bloomerang API Input](#bloomerang-api-input)
-- [ ] [Jotform API Input](#jotform-api-input)
-- [ ] [Other API Input](#other-api-input)
-- [ ] [From CSV Input](#from-csv-input)
-- [ ] [To CSV Output](#to-csv-output)
+- [ ] [API Input](#api-input)
+- [ ] [CSV Input](#csv-input)
+- [ ] [CSV Output](#csv-output)
 - [ ] [Directory Management](#directory-management)
 - [ ] [Year Management](#year-management)
 - [ ] [Report Management](#report-management)
@@ -69,7 +66,7 @@ The general format goes:
 
 **Definition of Done:** The board is set up with the accurate number of user stories and tasks, each describing a distinct feature of the project and the general, granular approach the developer will take to complete said feature.
 
-**Time:** This should take a few workdays. Setting up the user stories should only take one, but the tasks and sub-tasks should take slightly longer.
+**Time:** This is going to take a while, and it will probably be finished as the project is getting finished in general
 
 **As a developer,** **I want** to have a general map and overview of the tasks moving forward with this project, **so that** I can fully understand the project, the requirements, and the timeline.
 
@@ -94,13 +91,13 @@ The general format goes:
 - [x] Create the user stories related to the Input.
 - [ ] Create the tasks related to the Input.
 - [ ] Create the sub-tasks related to the Input.
-- [x] Create the user stores related to the Calculation.
+- [x] Create the user stories related to the Calculation.
 - [ ] Create the tasks related to the Calculation.
 - [ ] Create the sub-tasks related to the Calculation.
-- [x] Create the user stores related to the Output.
+- [x] Create the user stories related to the Output.
 - [x] Create the tasks related to the Output.
 - [ ] Create the sub-tasks related to the Output.
-- [x] Create the user stores related to the GUI.
+- [x] Create the user stories related to the GUI.
 - [ ] Create the tasks related to the GUI.
 - [ ] Create the sub-tasks related to the GUI.
 
@@ -114,7 +111,7 @@ The general format goes:
 
 **Time:** This will take as long as the entire project and probably a little longer after that.
 
-**As a developer,** **I want** proper documentation and well-commented code, **so that** future developers, including myself, can easily understand what each part of the program is doing, why, and how it connects to the whole..
+**As a developer,** **I want** proper documentation and well-commented code, **so that** future developers, including myself, can easily understand what each part of the program is doing, why, and how it connects to the whole.
 
 **As a stakeholder,** **I want** the program to be well documented, **so that** if something breaks in the future, someone could easily figure out what and how to fix it.
 
@@ -123,65 +120,35 @@ The general format goes:
 - [ ] [Good Documentation Practices]
 - [ ] []
 
-## Config Input
+## API Input
 
-**Definition of Done:** The application is capable of taking reading in data ranging from the designated home directory to API keys.
-
-**Time:** This shouldn't take longer than an hour.
-
-**As a stakeholder,** **I want** to be able to modify certain aspects of the program using a config file, **so that** I don't have to modify code to get the application functioning properly.
-
-### Config Input - Tasks
-
-## Bloomerang API Input
-
-**Definition of Done:** The application is capable of using the Bloomerang API to download information related to the month and year of a specific report.
-
-**Time:** This shouldn't take longer than a few hours.
-
-**As a stakeholder,** **I want** to use the Bloomerang API, **so that** certain tedious tasks are automated.
-
-### Bloomerang API Input - Tasks
-
-## Jotform API Input
-
-**Definition of Done:** The application is capable of using the Jotform API to download information related to the month and year of a specific report.
-
-**Time:** This shouldn't take longer than a few hours.
-
-**As a stakeholder,** **I want** to use the Bloomerang API, **so that** certain tedious tasks are automated.
-
-### Jotform API Input - Tasks
-
-## Other API Input
-
-**Definition of Done:** The application is capable of using various other APIs (as further defined in the tasks), to automated certain inputs.
+**Definition of Done:** The application is capable of using various API keys to download information related to the month and year of a specific report.
 
 **Time:** This could take a while, depending on which APIs (take, for instance, counting messages on Facebook).
 
 **As a stakeholder,** **I want** as many aspects of the program that can be automated to be automated, **so that** it can save me time.
 
-### Other API Input - Tasks
+### API Input - Tasks
 
-## From CSV Input
+## CSV Input
 
-**Definition of Done:** The application is capable of reading in every aspect of every piece of data for every sub-goal purely from .csv files. This ranges from yearly targets, to annual data, to monthly data, to every single piece of data that has been loading into the reports folder after report finalization.
+**Definition of Done:** The application is capable of reading in every aspect of every piece of data for every sub-goal purely from .csv files. This ranges from yearly targets, to annual data, to monthly data, to every single piece of data that gets stored in the report's folder after report finalization.
 
 **Time:** This shouldn't take longer than a few hours.
 
-**As a stakeholder,** **I want** to make sure that if something changes with the APIs, the program can work using pure csv files, **so that** it doesn't become utterly useless.
+**As a stakeholder,** **I want** to make sure that if something changes with the APIs, the program can work using pure .csv files, **so that** it doesn't become utterly useless.
 
-### From CSV Input - Tasks
+### CSV Input - Tasks
 
-## To CSV Output
+## CSV Output
 
-**Definition of Done:** The application is capable of offloading data, taken both from APIs and the user input, into csv files. These csv files should be the same ones that it is loading data from, and it should be capable of loading data to these files without corruption or duplication.
+**Definition of Done:** The application is capable of offloading data, taken both from APIs and the user input, into .csv files. These .csv files should be the same ones that it is loading data from, and it should be capable of loading data to these files without corruption or duplication.
 
 **Time:** This shouldn't take longer than a few hours.
 
 **As a stakeholder,** **I want** the changes made to data, both from APIs and my input, to be saved to the offline files, **so that** I can see, at any point in the future, exactly what data was used to generate which report, even if the data from the API changes.
 
-### To CSV Output - Tasks
+### CSV Output - Tasks
 
 ## Directory Management
 
@@ -207,31 +174,31 @@ The general format goes:
 - [ ] The config file should be formatted as a .csv file. The 0th column is what the next columns are on a that row. That is to say, the 0th column on the 0th row should be `relative_path_home_directory` with the following column on the same row (i.e. the next value after the comma) being the specified relative path to the home directory. The default should be `./home_directory/`. For following rows, it may be `bloomerang_API`, `facebook_login`, etc..
 - [ ] When the application first starts up, it reads in the config file.
 - [ ] If the config file is unable to be found, is corrupted, or formatted incorrectly, inform the user as such and create a new config file.
-- [ ] If a file of the same already exists in that directory, the existing file's name is changed the `obsolete_on_{date}.csv`.
+- [ ] If a file of the same name already exists in that directory, the existing file's name is changed `obsolete_on_{date}.csv`.
 - [ ] If a file using that `obsolete` file name already exists, simply increment an integer starting at 2 (e.g. `obsolete_on_{date}_2.csv`, `obsolete_on_{date}_3.csv`, ...).
 
 ### CSV Data Format
 
 **NOTE:** One would think that for a lot of these all that needs to be stored is the raw numbers, and the source can be ignored. That may be true and the application could be modified as such, however, as I currently envision the program, it would need to track the source of the data to avoid reentering data in subsequent months. Maybe, each month is beholden only to itself, and the year is summed up from the months? I'll give it some thought.
 
-- [ ] Regarding targets: Targets should be stored as annual, they always follow the format of 0th month 1st number. Each data source will specify what data the number is of.
+- [ ] Regarding targets: Targets should be stored as annual, they always follow the format of 0th column being the month 1st column being the number.
 - [ ] TODO: Have a talk with the stakeholder regarding how much data should be stored for each .csv. This might take a while.
-- [ ] Any row can be modified by the user. Internally, this would be represented as adding a new row just before the last one with the 0th column of `{data}_user_mod`.
-- [ ] If the data is monthly, it would be a .csv file with two columns: 0th referring to the source of the numbers and 1st referring to the number. The last row should always be: 0th `total` and 1st the total sum. This total should ALWAYS be updated by summing the entire .csv file, and is only stored for convenience sake. It shouldn't be modified directly, and if the file is every changes, it should be re-totaled.
-- [ ] If the data is annual, it would be a .csv file with two columns: 0th referring to the month and 1st referring to the number.
+- [ ] Any row can be modified by the user. Internally, this would be represented as adding a new row just before the last one with the 0th column of `{data}_user_mod` and a 1st column with a positive or negative number to be added to the original data.
+- [ ] In general, if the data is monthly, it would be a .csv file with two columns: 0th referring to the source of the numbers and 1st referring to the number. The last row should always be: 0th column `total` and 1st column total sum. This total should ALWAYS be updated by summing the entire .csv file, and is only stored for convenience sake. It shouldn't be modified directly, and if the file ever changes, it should be re-totaled.
+- [ ] In general, if the data is annual, it would be a .csv file with two columns: 0th referring to the month and 1st referring to the number.
 - [ ] If the data is supposed to be cumulative, the application will simply sum-up the annual .csv file.
 - [ ] Marketing Messages: 0th is source, 1st is number. Annual is standard annual. Cumulative is standard cumulative. Target is non-cumulative sum of each month (so standard annual).
-- [ ] Community Events: 0th is data, 1st is event name, 2nd ++ is Attendees. Annual is standard annual. Cumulative is standard cumulative. Target is non-cumulative sum of each month (so standard annual).
+- [ ] Community Events: 0th is data, 1st is event name, 2nd is Attendees. Annual is standard annual. Cumulative is standard cumulative. Target is non-cumulative sum of each month (so standard annual).
 - [ ] Figure out how EXP/LEAP Nom-App-Enroll should be stored (i.e. just numbers and dates, or everything (numbers and dates seems better and easier for what this application is meant to be)). Target is cumulative sum of each month (so standard cumulative) for nominations, applications, and enrollment for both EXP and LEAP.
 - [ ] Lectures: 0th is title, 1st is date, 2nd is Calvert Attendance, 3rd is Charles Attendance, 4th is St. Mary's Attendance, 5th others, 6th satisfaction. Not monthly, not standard annual, standard cumulative for each column after 1st. Target is cumulative sum of each month (so standard cumulative) for how many lectures there were, and how many attendees there were, and the percentage of satisfaction.
 - [ ] Surveys: Not monthly, standard annual, standard cumulative. Target is cumulative sum of each month (so standard cumulative).
-- [ ] Fundraising: Stored annually, but not standard. The 0th column is the date, the 1st is the event, 2nd is revenue source, 3rd is the raised revenue. The last row is 0th column `total` and 1st total sum. Target is cumulative sum of each month (so standard cumulative) for the revenue.
+- [ ] Fundraising: Stored annually, but not standard. The 0th column is the date, the 1st is the event, 2nd is revenue source, 3rd is the raised revenue. The last row is 0th column `total` and 1st total sum of revenue. Target is cumulative sum of each month (so standard cumulative) for the revenue.
 - [ ] LSMAA Membership: Standard annual and standard cumulative. Target is cumulative sum of each month (so standard cumulative) for number of members.
 - [ ] LSMAA Revenue: Standard annual and standard cumulative. Target is cumulative sum of each month (so standard cumulative) for the revenue.
-- [ ] Program sponsor: 0th is date, 1st program sponsor, 2nd number, 3rd level, 4th revenue. Second to last row is a sum of all the event sponsors. Last row 0th is `total` and 1st is total sum of revenue. Target is cumulative sum of each month (so standard cumulative) for the number of program sponsors.
-- [ ] Lunch sponsor: 0th is date, 1st is lunch sponsor, 2nd is session, 3rd is pledged or paid, 4th is revenue. Second to last row is sum of all the lunch sponsors. Last is 0th `total` 1st total sum of revenue. Target is cumulative sum of each month (so standard cumulative) for the number of lunch sponsors.
+- [ ] Program sponsor: 0th is date, 1st program sponsor, 2nd number, 3rd level, 4th revenue. Second to last row is a sum of all the event sponsors. Last row has 0th column as `total` and 1st as total sum of revenue. Target is cumulative sum of each month (so standard cumulative) for the number of program sponsors.
+- [ ] Lunch sponsor: 0th is date, 1st is lunch sponsor, 2nd is session, 3rd is pledged or paid, 4th is revenue. Second to last row is sum of all the lunch sponsors. Last is 0th column being `total` and 1st column being total sum of revenue. Target is cumulative sum of each month (so standard cumulative) for the number of lunch sponsors.
 - [ ] Event sponsor: 0th is date, 1st is event sponsor, 2nd is event, 3rd is revenue. Second to last is a sum of all event sponsors, last is the sum of revenue. Target is cumulative sum of each month (so standard cumulative) for the number of event sponsors.
-- [ ] Total sponsor: This is just a sum of all the sum of all the revenue of each sponsor. It should be 0th is month, 1st is revenue. Target is the cumulative sum of each month (so standard cumulative) for the revenue.
+- [ ] Total sponsor revenue: This is just a sum of all the revenue of each sponsor. It should be 0th column as month, 1st as revenue. Target is the cumulative sum of each month (so standard cumulative) for the revenue.
 
 ### In-RAM Data Object
 
@@ -247,7 +214,7 @@ The general format goes:
 
 ### Directory Creation
 
-- [ ] Write a function that creates a directory named `####-####` in the directory passed as an argument, where `####-####` is passed as an argument and is current fiscal year for LSM. The function should also create a .csv named `configs` and fill it with the default data per [CSV Data Format](#csv-data-format). The function should create sub-directory named `Inputs`. Inside of `Inputs`, it should create the sub-directory named `Targets`. Inside of `Targets`, it should create a .csv for each Target and fill it with the default data per [CSV Data Format](#csv-data-format). Inside of `Inputs`, it should create the sub-directory named `Annual Goals`. Inside of `Annual Goals`, it should create a .csv for each annual goal and fill it with the default data per [CSV Data Format](#csv-data-format).
+- [ ] Write a function that creates a directory named `####-####` in the directory passed as an argument, where `####-####` is passed as an argument and is current fiscal year for LSM. The function should also create a .csv named `configs` and fill it with the default data per [CSV Data Format](#csv-data-format). The function should create a sub-directory named `Inputs`. Inside of `Inputs`, it should create a sub-directory named `Targets`. Inside of `Targets`, it should create a .csv for each Target and fill it with the default data per [CSV Data Format](#csv-data-format). Inside of `Inputs`, it should create a sub-directory named `Annual Goals`. Inside of `Annual Goals`, it should create a .csv for each annual goal and fill it with the default data per [CSV Data Format](#csv-data-format).
 - [ ] Write a function that creates a directory named `{mon : mon is an element of {Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec}}` `mon Report` in the directory passed as an argument. If a directory of that same name already exists, the function should append a `{_n : n is not an element of {1} and n is an element of the Natural Numbers}` to the end of the directory's name. It should incrementally check each possible name until it finds one that fits. The function should then create two sub-directories, one named `Data` and the second named `Outputs`. Inside of `Data`, the function should create a .csv for each of the monthly goals and fill them with the default data per [CSV Data Format](#csv-data-format).
 
 ### Directory Management Documentation
@@ -297,7 +264,7 @@ The general format goes:
 
 ## Report Finalization
 
-**Definition of Done:** The application can save all the data used in the report into the reports inputs folder, internalizing any modifications made by the user.
+**Definition of Done:** The application can save all the data used in the report into the report's inputs folder, internalizing any modifications made by the user.
 
 **Time:** This could take a few hours.
 
@@ -339,7 +306,7 @@ The general format goes:
 - [x] [Beautiful Soup](https://www.crummy.com/software/BeautifulSoup/bs4/doc/) (probably has too much for me (but definition has what I need)).
 - [x] [Jinja](https://jinja.palletsprojects.com/en/stable/).
 
-**Conclusion:** There's plenty of options, it can certainly be done.
+**Conclusion:** There's plenty of options, it can certainly be done. I'll probably use Jinja.
 
 ### Research Plots into HTML
 
@@ -348,7 +315,7 @@ The general format goes:
 - [ ] [HTMLWriter/MPLD3/Plotly](https://www.scivision.dev/python-html-plotting-iframe-share/).
 - [ ] [Plotly](https://plotly.com/python/) for plots and [Plotly](https://plotly.com/python/interactive-html-export/) for into HTML.
 
-**Conclusion:** At the bare minimum, I can get the plot as a .png, then save that into the HTML/PDF. For the GUI, the two sub-tasks seem to work. It's funny, looking into Plotly, the opposite seems to be the case. I can easily render the plot into HTML, but I cannot so easily render it in TKinter. It might make sense to save the .png and load that into TKinter. I might (I won't) use MatPlotLib to render the graph for TKinter and Plotly for HTML (the graphs would look different, however slightly, and it wouldn't be worth it.)
+**Conclusion:** At the bare minimum, I can get the plot as a .png, then save that into the HTML/PDF. ~~For the GUI, the two sub-tasks seem to work.~~ (?) It's funny, looking into Plotly, the opposite seems to be the case. I can easily render the plot into HTML, but I cannot so easily render it in TKinter. It might make sense to save the .png and load that into TKinter. I might (I won't) use MatPlotLib to render the graph for TKinter and Plotly for HTML (the graphs would look different, however slightly, and it wouldn't be worth it.)
 
 ### Code Python into HTML
 
@@ -368,7 +335,7 @@ The general format goes:
 
 **Time:** This shouldn't take longer than a day.
 
-**As a developer,** **I want** the GUI platform and framework to be well-researched, **so that** I don't make mistakes while building the GUI that could cost significant time-loss.
+**As a developer,** **I want** the GUI platform and framework to be well-researched, **so that** I don't make mistakes while building the GUI that could cause significant time-loss.
 
 ### GUI - Tasks
 
@@ -378,11 +345,13 @@ The general format goes:
 
 - [ ] [PyUIBuilder](https://pyuibuilder.com/).
 - [ ] [GitHub](https://github.com/PaulleDemon/PyUIBuilder).
-- [x] Look into the licensing. (Looks like I'm free to use so long as I only use the WebApp.)
+- [x] Look into the licensing.
+
+**Conclusion:** Looks like I'm free to use so long as I only use the WebApp.
 
 ## Homepage
 
-**Definition of Done:** The homepage should launch when the user opens the application. It should show a list of the years that the application was able to index. It should display a settings button in one corner, with a button to see the report drafts in the other.
+**Definition of Done:** The homepage should launch when the user opens the application. It should show a list of the years that the application was able to index. In one corner, it should display a settings button and a button to see the report drafts.
 
 **Time:** This shouldn't take longer than a couple of hours.
 
@@ -396,7 +365,7 @@ The general format goes:
 
 **Time:** This could take a while. Most likely not longer than a day. But depending on how ambitious the application gets, perhaps longer.
 
-**As a stakeholder,** **I want** a settings page, **so that** I can change the where the files get generated, update credentials and API keys for data sources, and certain, visual aspects of the application.
+**As a stakeholder,** **I want** a settings page, **so that** I can change where the files get generated, update credentials and API keys for data sources, and certain, visual aspects of the application.
 
 ### Settings Page - Tasks
 
@@ -432,7 +401,7 @@ The general format goes:
 
 ## Edit Year Page
 
-**Definition of Done:** A page that can be accessed by clicking the edit year button on a year's page. This page will display two buttons: one for editing the year's annual data and one for editing the year's targets. Each button should take the user to a new page. Clicking on the annual data button will take the user to a page that displays all the annual data in distinct boxes that can be edited. Any edits to the annual data will ask the user where this new data comes from. The user can refuse to answer, specify a new source, or actually edit the data of an existing source. Clicking on the target button will take the user to a grid of distinct boxes with one sub-goal's targets in each box. Clicking a box will allow the user to edit it.
+**Definition of Done:** A page that can be accessed by clicking the edit year button on a year's page. This page will display two buttons: one for editing the year's annual data and one for editing the year's targets. Each button should take the user to a new page. Clicking on the annual data button will take the user to a page that displays all the annual data in distinct boxes that can be edited. Any edits to the annual data will ask the user where this new data comes from. The user can refuse to answer, specify a new source, or edit the data of an existing source. Clicking on the target button will take the user to a grid of distinct boxes with one sub-goal's targets in each box. Clicking a box will allow the user to edit it.
 
 **Time:** This one could take a while. It requires passing data from the front end to the back end. Maybe a day, possibly two.
 
@@ -456,6 +425,6 @@ The general format goes:
 
 **Time:** This, definitively, will take the longest. It is the meat and bones of the application. The part that causes each distinct part to interact the most. This is where the user will create the report, modify the report, add new data in, and plenty of other things. It could take several days.
 
-**As a stakeholder,** **I want** the ability to validate each piece of data before the report is generate, **so that** I can ensure that the data is correct, input data that needs to be inputted manually, modify any data that might need modification, and ensure that the KPI Dashboard report is as accurate and correct as if I had done the whole thing manually.
+**As a stakeholder,** **I want** the ability to validate each piece of data before the report is generated, **so that** I can ensure that the data is correct, input data that needs to be inputted manually, modify any data that might need modification, and ensure that the KPI Dashboard report is as accurate and correct as if I had done the whole thing manually.
 
 ### Report Validation - Tasks
