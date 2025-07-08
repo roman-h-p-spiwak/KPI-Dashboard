@@ -1,5 +1,11 @@
-from os import DirEntry, makedirs, path, scandir
+from datetime import datetime
+from os import DirEntry, makedirs, path, rename, scandir
 from re import findall
+import inputs as inputs
+
+
+
+DEFAULT_SUB_GOALS = ""
 
 
 
@@ -32,7 +38,7 @@ def directory_check(entry: DirEntry, control: int) -> bool:
         case 1:
             x = findall(r"\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) Report(?:_(?:[2-9]|(?:[1-9]+[0-9]+)))?\b", entry.name)
         case 2:
-            x = findall(r"\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) Report(?:_(?:[2-9]|(?:[1-9]+[0-9]+)))?\b Draft(?:_(?:[2-9]|(?:[1-9]+[0-9]+)))?\b", entry.name)
+            x = findall(r"[0-9]{4}-[0-9]{4} \b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) Report(?:_(?:[2-9]|(?:[1-9]+[0-9]+)))?\b Draft(?:_(?:[2-9]|(?:[1-9]+[0-9]+)))?\b", entry.name)
         case _:
             print(f"\033[0;31mError: Passed control variable `{control}` doesn't exist.\033[0m")
             return False
@@ -41,30 +47,47 @@ def directory_check(entry: DirEntry, control: int) -> bool:
 
 def year_create(directory: str, year: str) -> bool:
     year_folder = path.join(directory, year)
-    if not directory_create(year_folder):
+    year_data_folder = path.join(year_folder, "Data")
+    year_targets_folder = path.join(year_data_folder, "Targets")
+    year_annual_goals_folder = path.join(year_data_folder, "Annual Goals")
+    if (
+        not directory_create(year_folder) and 
+        not directory_create(year_data_folder) and 
+        not directory_create(year_targets_folder) and
+        not directory_create(year_annual_goals_folder)
+    ):
         return False
-    ...
+    
+    
     return True
 
 def report_create(directory: str, month: str) -> bool:
-    month += " Report"
-    month_folder = path.join(directory, month)
+    month_folder = path.join(directory, f"{month} Report")
     if path.isdir(month_folder):
-        month += "_"
-        i = 2
-        month_folder = path.join(directory, month + str(i))
-        while path.isdir(month_folder) and i <= 99:
-            i += 1
-            month_folder = path.join(directory, month + str(i))
+        num = 2
+        while num <= 99 and path.isdir(f"{month_folder}_{num}"):
+            num += 1
+        if num == 100:
+            print(f"\033[0;31mError: One-Hundred instances of `{month} Report` already exist.\033[0m")
+            return False
+        month_folder = path.join(directory, f"{month} Report_{num}")
     
-    if not directory_create(month_folder):
+    month_data_folder = path.join(month_folder, "Data")
+    month_outputs_folder = path.join(month_folder, "Outputs")
+    if (
+        not directory_create(month_folder) and 
+        not directory_create(month_data_folder) and 
+        not directory_create(month_outputs_folder)
+    ):
         return False
     ...
+    
     return True
     
 def directory_create(directory: str) -> bool:
     try:
         makedirs(directory, exist_ok=False)
+        print(f"\033[0;32m Success: The directory `{directory}` was created without error.\033[0m")
         return True
     except FileExistsError:
         print(f"\033[0;31mError: The directory `{directory}` already exists.\033[0m")
@@ -73,16 +96,29 @@ def directory_create(directory: str) -> bool:
         print(f"\033[0;31mError: An unexpected error {e} occurred while attempting to create directory {directory}.\033[0m")
         return False
 
-def main():
-    year_create("./.testdata/", "2024-2025")
-    year_create("./.testdata/", "2025-2026")
-    report_create("./.testdata/", "Jan")
-    report_create("./.testdata/", "Dec")
-    report_create("./.testdata/", "Jan")
-    report_create("./.testdata/", "Feb")
-    print(year_index("./.testdata/"))
-    print(report_index("./.testdata/"))
-    print(draft_report_index("./.testdata/"))
-    pass
 
-main()
+def file_create(directory: str, file_name: str, default_content: str) -> bool:
+    path_to_file = path.join(directory, file_name)
+    if path.isfile(path_to_file):
+        old_file = f"{file_name}_obsolete_on_{datetime.today().strftime('%Y-%m-%d')}"
+        path_to_old_file = path.join(directory, old_file)
+        num = 2
+        if path.isfile(path_to_old_file):
+            while num <= 99 and path.isfile(f"{path_to_old_file}_{num}"):
+                num += 1
+            if num == 100:
+                print(f"\033[0;31mError: One-Hundred instances of `{old_file}` already exist.\033[0m")
+                return False
+            path_to_old_file += f"_{num}"
+            old_file += f"_{num}"
+        rename(path_to_file, f"{path_to_old_file}")
+        print(f"\033[0;32m Success: The file `{file_name}` was renamed to `{old_file}` without error.\033[0m")
+    
+    with open(path_to_file, "w") as file:
+        file.write(default_content)
+    print(f"\033[0;32m Success: The file `{file_name}` had the content `{default_content}` written without error.\033[0m")
+    
+    return True
+
+file_create("./", "test.csv", "sub_goal, data_file, monthly, summed_column, (stuff, stuff1, stuff2, stuff3)")
+print(inputs.read_csv("./test.csv"))

@@ -132,13 +132,19 @@ The general format goes:
 
 ## CSV Input
 
-**Definition of Done:** The application is capable of reading in every aspect of every piece of data for every sub-goal purely from .csv files. This ranges from yearly targets, to annual data, to monthly data, to every single piece of data that gets stored in the report's folder after report finalization.
+**Definition of Done:** The application is capable of reading in every aspect of every piece of data for every sub-goal purely from .csv files. This ranges from yearly targets, to annual data, to monthly data, to the yearly sub-goals, to every single piece of data that gets stored in the report's folder after report finalization.
 
 **Time:** This shouldn't take longer than a few hours.
 
 **As a stakeholder,** **I want** to make sure that if something changes with the APIs, the program can work using pure .csv files, **so that** it doesn't become utterly useless.
 
 ### CSV Input - Tasks
+
+- [ ] [Read-In](#read-in)
+
+### Read-In
+
+- [ ] Write a function that can read a .csv file passed in as an argument, processes each line, as places it into a list which it returns.
 
 ## CSV Output
 
@@ -181,15 +187,16 @@ The general format goes:
 
 **NOTE:** One would think that for a lot of these all that needs to be stored is the raw numbers, and the source can be ignored. That may be true and the application could be modified as such, however, as I currently envision the program, it would need to track the source of the data to avoid reentering data in subsequent months. Maybe, each month is beholden only to itself, and the year is summed up from the months? I'll give it some thought.
 
+- [ ] Contained within the year `Data` folder, should be a `sub_goals.csv` file. This file will have the 0th row following this pattern `sub_goal, data_file, monthly, summed_column, (data_column_one, data_column_two, data_column_three, data_column_four)`.
 - [ ] Regarding targets: Targets should be stored as annual, they always follow the format of 0th column being the month 1st column being the number.
-- [ ] TODO: Have a talk with the stakeholder regarding how much data should be stored for each .csv. This might take a while.
+- [x] TODO: Have a talk with the stakeholder regarding how much data should be stored for each .csv. This might take a while.
 - [ ] Any row can be modified by the user. Internally, this would be represented as adding a new row just before the last one with the 0th column of `{data}_user_mod` and a 1st column with a positive or negative number to be added to the original data.
 - [ ] In general, if the data is monthly, it would be a .csv file with two columns: 0th referring to the source of the numbers and 1st referring to the number. The last row should always be: 0th column `total` and 1st column total sum. This total should ALWAYS be updated by summing the entire .csv file, and is only stored for convenience sake. It shouldn't be modified directly, and if the file ever changes, it should be re-totaled.
 - [ ] In general, if the data is annual, it would be a .csv file with two columns: 0th referring to the month and 1st referring to the number.
 - [ ] If the data is supposed to be cumulative, the application will simply sum-up the annual .csv file.
-- [ ] Marketing Messages: 0th is source, 1st is number. Annual is standard annual. Cumulative is standard cumulative. Target is non-cumulative sum of each month (so standard annual).
-- [ ] Community Events: 0th is data, 1st is event name, 2nd is Attendees. Annual is standard annual. Cumulative is standard cumulative. Target is non-cumulative sum of each month (so standard annual).
-- [ ] Figure out how EXP/LEAP Nom-App-Enroll should be stored (i.e. just numbers and dates, or everything (numbers and dates seems better and easier for what this application is meant to be)). Target is cumulative sum of each month (so standard cumulative) for nominations, applications, and enrollment for both EXP and LEAP.
+- [x] Marketing Messages: 0th is source, 1st is number. Annual is standard annual. Cumulative is standard cumulative. Target is non-cumulative sum of each month (so standard annual).
+- [x] Community Events: 0th is date, 1st is event name, 2nd is Attendees. Annual is standard annual. Cumulative is standard cumulative. Target is non-cumulative sum of each month (so standard annual).
+- [ ] Figure out how EXP/LEAP Nom-App-Enroll should be stored (i.e. just numbers and dates, or everything (numbers and dates seems better and easier for what this application is meant to be)). Target is cumulative sum of each month (so standard cumulative) for nominations, applications, and enrollment for both EXP and LEAP. **It should just be the numbers and dates.**
 - [ ] Lectures: 0th is title, 1st is date, 2nd is Calvert Attendance, 3rd is Charles Attendance, 4th is St. Mary's Attendance, 5th others, 6th satisfaction. Not monthly, not standard annual, standard cumulative for each column after 1st. Target is cumulative sum of each month (so standard cumulative) for how many lectures there were, and how many attendees there were, and the percentage of satisfaction.
 - [ ] Surveys: Not monthly, standard annual, standard cumulative. Target is cumulative sum of each month (so standard cumulative).
 - [ ] Fundraising: Stored annually, but not standard. The 0th column is the date, the 1st is the event, 2nd is revenue source, 3rd is the raised revenue. The last row is 0th column `total` and 1st total sum of revenue. Target is cumulative sum of each month (so standard cumulative) for the revenue.
@@ -210,12 +217,12 @@ The general format goes:
 
 - [x] Write a function that non-recursively looks in the directory passed as an argument for all folders that follows the format of `####-####`. It returns a list where each element is a tuple in which the first element is the name of the folder and the second element is the path to the folder.
 - [x] Write a function that non-recursively looks in the directory passed as an argument for all folders that follow the format of `{mon : mon is an element of {Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec}} and {n : n is not an element of {1} and n is an element of the Natural Numbers}` `mon Report{{},_n}`. Or, in human words, has a month of the year, followed by the word " Report" followed by either nothing or an underscore with some number that isn't "0" or "1". It returns a list where each element is a tuple in which the first element is the name of the folder and the second element is the path to the folder.
-- [x] Write a function that non-recursively looks in the directory passed as an argument for all folders that follow the format of `{mon : mon is an element of {Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec}} and {n : n is not an element of {1} and n is an element of the Natural Numbers}` `mon Report{{},_n} Draft{{},_n}}`. Or, in human words, has a month of the year, followed by the word " Report" followed by either nothing or an underscore with some number that isn't "0" or "1", followed by the word " Draft" followed by either nothing or an underscore with some number that isn't "0" or "1". It returns a list where each element is a tuple in which the first element is the name of the folder and the second element is the path to the folder.
+- [x] Write a function that non-recursively looks in the directory passed as an argument for all folders that follow the format of `{mon : mon is an element of {Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec}} and {n : n is not an element of {1} and n is an element of the Natural Numbers}` `####-#### mon Report{{},_n} Draft{{},_n}}`. Or, in human words, has a year range, followed by a month of the year, followed by the word " Report" followed by either nothing or an underscore with some number that isn't "0" or "1", followed by the word " Draft" followed by either nothing or an underscore with some number that isn't "0" or "1". It returns a list where each element is a tuple in which the first element is the name of the folder and the second element is the path to the folder.
 
 ### Directory Creation
 
-- [ ] Write a function that creates a directory named `####-####` in the directory passed as an argument, where `####-####` is passed as an argument and is current fiscal year for LSM. The function should also create a .csv named `configs` and fill it with the default data per [CSV Data Format](#csv-data-format). The function should create a sub-directory named `Inputs`. Inside of `Inputs`, it should create a sub-directory named `Targets`. Inside of `Targets`, it should create a .csv for each Target and fill it with the default data per [CSV Data Format](#csv-data-format). Inside of `Inputs`, it should create a sub-directory named `Annual Goals`. Inside of `Annual Goals`, it should create a .csv for each annual goal and fill it with the default data per [CSV Data Format](#csv-data-format).
-- [ ] Write a function that creates a directory named `{mon : mon is an element of {Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec}}` `mon Report` in the directory passed as an argument. If a directory of that same name already exists, the function should append a `{_n : n is not an element of {1} and n is an element of the Natural Numbers}` to the end of the directory's name. It should incrementally check each possible name until it finds one that fits. The function should then create two sub-directories, one named `Data` and the second named `Outputs`. Inside of `Data`, the function should create a .csv for each of the monthly goals and fill them with the default data per [CSV Data Format](#csv-data-format).
+- [ ] Write a function that creates a directory named `####-####` in the directory passed as an argument, where `####-####` is passed as an argument and is current fiscal year for LSM. The function should also create a .csv named `configs` and fill it with the default data per [CSV Data Format](#csv-data-format). The function should create a sub-directory named `Data`. Inside of `Data`, it should create a sub-directory named `Targets`. Inside of `Targets`, it should create a .csv for each Target and fill it with the default data per [CSV Data Format](#csv-data-format). Inside of `Data`, it should create a sub-directory named `Annual Goals`. Inside of `Annual Goals`, it should create a .csv for each annual goal and fill it with the default data per [CSV Data Format](#csv-data-format).
+- [ ] Write a function that creates a directory named `{mon : mon is an element of {Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec}}` `mon Report` in the directory passed as an argument. If a directory of that same name already exists, the function should append a `{_n : n is not an element of {1} and n is an element of the Natural Numbers}` to the end of the directory's name. It should incrementally check each possible name until it finds one that fits. The function should then create three sub-directories: one named `Data`, the second named `Outputs`, and the third named `Configs`. Inside of `Data`, the function should create a .csv for each of the monthly goals and fill them with the default data per [CSV Data Format](#csv-data-format).
 
 ### Directory Management Documentation
 
