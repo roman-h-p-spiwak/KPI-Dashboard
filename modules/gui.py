@@ -175,7 +175,6 @@ class App(ctk.CTk):
 
         
         
-        dm.main()
         self.start_home()
     
     def start_home(self):

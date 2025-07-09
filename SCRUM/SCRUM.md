@@ -167,7 +167,7 @@ The general format goes:
 ### Directory Management - Tasks
 
 - [ ] [Config Read-In](#config-read-in)
-- [ ] [CSV Data Format](#csv-data-format)
+- [x] [CSV Data Format](#csv-data-format)
 - [ ] [In-RAM Data Object](#in-ram-data-object)
 - [ ] [In-RAM Year Object](#in-ram-year-object)
 - [ ] [In-RAM Report Object](#in-ram-report-object)
@@ -187,25 +187,25 @@ The general format goes:
 
 **NOTE:** One would think that for a lot of these all that needs to be stored is the raw numbers, and the source can be ignored. That may be true and the application could be modified as such, however, as I currently envision the program, it would need to track the source of the data to avoid reentering data in subsequent months. Maybe, each month is beholden only to itself, and the year is summed up from the months? I'll give it some thought.
 
-- [ ] Contained within the year `Data` folder, should be a `sub_goals.csv` file. This file will have the 0th row following this pattern `sub_goal, data_file, monthly, summed_column, (data_column_one, data_column_two, data_column_three, data_column_four)`.
-- [ ] Regarding targets: Targets should be stored as annual, they always follow the format of 0th column being the month 1st column being the number.
+- [x] Contained within the year `Data` folder, should be a `sub_goals.csv` file. This file will have the 0th row following this pattern `sub_goal, data_file, monthly, summed_column, (data_column_one, data_column_two, data_column_three, data_column_four)`.
+- [x] Regarding targets: Targets should be stored as annual, they always follow the format of 0th column being the month 1st column being the number.
 - [x] TODO: Have a talk with the stakeholder regarding how much data should be stored for each .csv. This might take a while.
-- [ ] Any row can be modified by the user. Internally, this would be represented as adding a new row just before the last one with the 0th column of `{data}_user_mod` and a 1st column with a positive or negative number to be added to the original data.
-- [ ] In general, if the data is monthly, it would be a .csv file with two columns: 0th referring to the source of the numbers and 1st referring to the number. The last row should always be: 0th column `total` and 1st column total sum. This total should ALWAYS be updated by summing the entire .csv file, and is only stored for convenience sake. It shouldn't be modified directly, and if the file ever changes, it should be re-totaled.
-- [ ] In general, if the data is annual, it would be a .csv file with two columns: 0th referring to the month and 1st referring to the number.
-- [ ] If the data is supposed to be cumulative, the application will simply sum-up the annual .csv file.
+- [x] Any row can be modified by the user. Internally, this would be represented as adding a new row just before the last one with the 0th column of `{data}_user_mod` and a 1st column with a positive or negative number to be added to the original data.
+- [x] In general, if the data is monthly, it would be a .csv file with two columns: 0th referring to the source of the numbers and 1st referring to the number. The last row should always be: 0th column `total` and 1st column total sum. This total should ALWAYS be updated by summing the entire .csv file, and is only stored for convenience sake. It shouldn't be modified directly, and if the file ever changes, it should be re-totaled.
+- [x] In general, if the data is annual, it would be a .csv file with two columns: 0th referring to the month and 1st referring to the number.
+- [x] If the data is supposed to be cumulative, the application will simply sum-up the annual .csv file.
 - [x] Marketing Messages: 0th is source, 1st is number. Annual is standard annual. Cumulative is standard cumulative. Target is non-cumulative sum of each month (so standard annual).
 - [x] Community Events: 0th is date, 1st is event name, 2nd is Attendees. Annual is standard annual. Cumulative is standard cumulative. Target is non-cumulative sum of each month (so standard annual).
 - [x] Figure out how EXP/LEAP Nom-App-Enroll should be stored (i.e. just numbers and dates, or everything (numbers and dates seems better and easier for what this application is meant to be)). Target is cumulative sum of each month (so standard cumulative) for nominations, applications, and enrollment for both EXP and LEAP. **It should just be the numbers and dates.**
 - [x] Lectures: 0th is title, 1st is date, 2nd is Calvert Attendance, 3rd is Charles Attendance, 4th is St. Mary's Attendance, 5th others, 6th satisfaction. Not monthly, not standard annual, standard cumulative for each column after 1st. Target is cumulative sum of each month (so standard cumulative) for how many lectures there were, and how many attendees there were, and the percentage of satisfaction.
 - [x] Surveys: Not monthly, standard annual, standard cumulative. Target is cumulative sum of each month (so standard cumulative).
-- [ ] Fundraising: Stored annually, but not standard. The 0th column is the date, the 1st is the event, 2nd is revenue source, 3rd is the raised revenue. The last row is 0th column `total` and 1st total sum of revenue. Target is cumulative sum of each month (so standard cumulative) for the revenue.
-- [ ] LSMAA Membership: Standard annual and standard cumulative. Target is cumulative sum of each month (so standard cumulative) for number of members.
-- [ ] LSMAA Revenue: Standard annual and standard cumulative. Target is cumulative sum of each month (so standard cumulative) for the revenue.
-- [ ] Program sponsor: 0th is date, 1st program sponsor, 2nd number, 3rd level, 4th revenue. Second to last row is a sum of all the event sponsors. Last row has 0th column as `total` and 1st as total sum of revenue. Target is cumulative sum of each month (so standard cumulative) for the number of program sponsors.
-- [ ] Lunch sponsor: 0th is date, 1st is lunch sponsor, 2nd is session, 3rd is pledged or paid, 4th is revenue. Second to last row is sum of all the lunch sponsors. Last is 0th column being `total` and 1st column being total sum of revenue. Target is cumulative sum of each month (so standard cumulative) for the number of lunch sponsors.
-- [ ] Event sponsor: 0th is date, 1st is event sponsor, 2nd is event, 3rd is revenue. Second to last is a sum of all event sponsors, last is the sum of revenue. Target is cumulative sum of each month (so standard cumulative) for the number of event sponsors.
-- [ ] Total sponsor revenue: This is just a sum of all the revenue of each sponsor. It should be 0th column as month, 1st as revenue. Target is the cumulative sum of each month (so standard cumulative) for the revenue.
+- [x] Fundraising: Stored annually, but not standard. The 0th column is the date, the 1st is the event, 2nd is revenue source, 3rd is the raised revenue. The last row is 0th column `total` and 1st total sum of revenue. Target is cumulative sum of each month (so standard cumulative) for the revenue.
+- [x] LSMAA Membership: Standard annual and standard cumulative. Target is cumulative sum of each month (so standard cumulative) for number of members.
+- [x] LSMAA Revenue: Standard annual and standard cumulative. Target is cumulative sum of each month (so standard cumulative) for the revenue.
+- [x] Program sponsor: 0th is date, 1st program sponsor, 2nd number, 3rd level, 4th revenue. Second to last row is a sum of all the event sponsors. Last row has 0th column as `total` and 1st as total sum of revenue. Target is cumulative sum of each month (so standard cumulative) for the number of program sponsors.
+- [x] Lunch sponsor: 0th is date, 1st is lunch sponsor, 2nd is session, 3rd is pledged or paid, 4th is revenue. Second to last row is sum of all the lunch sponsors. Last is 0th column being `total` and 1st column being total sum of revenue. Target is cumulative sum of each month (so standard cumulative) for the number of lunch sponsors.
+- [x] Event sponsor: 0th is date, 1st is event sponsor, 2nd is event, 3rd is revenue. Second to last is a sum of all event sponsors, last is the sum of revenue. Target is cumulative sum of each month (so standard cumulative) for the number of event sponsors.
+- [x] Total sponsor revenue: This is just a sum of all the revenue of each sponsor. It should be 0th column as month, 1st as revenue. Target is the cumulative sum of each month (so standard cumulative) for the revenue.
 
 ### In-RAM Data Object
 
