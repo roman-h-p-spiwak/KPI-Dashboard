@@ -1,11 +1,12 @@
 from datetime import datetime
 from os import DirEntry, makedirs, path, rename, scandir
 from re import findall
-import inputs as inputs
+from inputs import read_csv
 
 
-
+DEFAULT_GOALS = ""
 DEFAULT_SUB_GOALS = ""
+DEFAULT_DATA = ""
 
 
 
@@ -121,4 +122,4 @@ def file_create(directory: str, file_name: str, default_content: str) -> bool:
     return True
 
 file_create("./", "test.csv", "sub_goal, data_file, monthly, summed_column, (stuff, stuff1, stuff2, stuff3)")
-print(inputs.read_csv("./test.csv"))
+print(read_csv("./test.csv"))

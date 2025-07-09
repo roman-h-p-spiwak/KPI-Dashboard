@@ -8,7 +8,7 @@ def read_csv(input: str, ) -> list:
             data.append([])
             entry = ""
             control = False
-            for char in line:
+            for char in line: #TODO: Change to ignore last character on a line.
                 if not control and char == ',':
                     data[i].append(entry)
                     entry = ""
