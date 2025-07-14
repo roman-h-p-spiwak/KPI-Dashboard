@@ -1,4 +1,4 @@
-from modules.directory_management import year_create, year_index, report_index, get_app_configs
+from modules.directory_management import year_create, report_create, year_index, report_index, get_app_configs
 from modules.inputs import find_row, find_column
 from modules.gui import App
 
@@ -15,13 +15,8 @@ def create_years(year: str, comp_year: str):
 
     pass
 
-def create_reports():
-    pass
-
 
 def main():
-    
-    
 
     
     app = App(home_directory, 
@@ -29,8 +24,8 @@ def main():
               int(configs[find_row(configs, "button_width")][1]), 
               year_index, 
               report_index, 
-              create_years, 
-              create_reports)
+              year_create, 
+              report_create)
     app.mainloop()
 
 

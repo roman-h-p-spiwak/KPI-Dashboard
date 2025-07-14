@@ -1,7 +1,7 @@
 from os import DirEntry, makedirs, path, scandir
 from re import findall
-from shutil import copy
-from modules.inputs import read_csv, create_csv, modify_cell, find_row
+from shutil import copy, copytree
+from modules.inputs import helper, read_csv, create_csv, modify_cell, find_row
 
 def get_app_configs(path_to_file: str) -> list:
     
@@ -79,37 +79,46 @@ def directory_check(entry: DirEntry, control: int) -> bool:
 
 def year_create(directory: str, year: str, comp_year = "") -> bool:
     year_folder = path.join(directory, year)
-    year_configs_folder = path.join(year_folder, "Configs")
-    year_data_folder = path.join(year_folder, "Data")
-    year_targets_folder = path.join(year_data_folder, "Targets")
-    year_annual_goals_folder = path.join(year_data_folder, "Annual Goals")
+    year_configs_folder = path.join(year_folder, "configs")
+    year_inputs_folder = path.join(year_folder, "inputs")
+    year_data_folder = path.join(year_inputs_folder, "data")
+    year_targets_folder = path.join(year_inputs_folder, "targets")
     if (
         not directory_create(year_folder) or 
         not directory_create(year_configs_folder) or 
+        not directory_create(year_inputs_folder) or 
         not directory_create(year_data_folder) or 
-        not directory_create(year_targets_folder) or 
-        not directory_create(year_annual_goals_folder)
+        not directory_create(year_targets_folder)
     ):
         return False
     
-    if comp_year:
+    if comp_year and comp_year != "None":
         comp_year_folder = path.join(directory, comp_year)
         if not path.isdir(comp_year_folder):
             print(f"\033[0;31mError: The year `{comp_year}` doesn't exist.\033[0m")
             return False
-        comp_year_configs_folder = path.join(comp_year_folder, "Configs")
+        comp_year_configs_folder = path.join(comp_year_folder, "configs")
         
-        copy_or_create(path.join(comp_year_configs_folder, "./goals.csv"), path.join(year_configs_folder, "goals.csv"), read_csv("./default_goals.csv"))
-        copy_or_create(path.join(comp_year_configs_folder, "./sub_goals.csv"), path.join(year_configs_folder, "sub_goals.csv"), read_csv("./default_sub_goals.csv"))
-        copy_or_create(path.join(comp_year_configs_folder, "./data.csv"), path.join(year_configs_folder, "data.csv"), read_csv("./default_data.csv"))
+        copy_or_create(path.join(comp_year_configs_folder, "goals.csv"), path.join(year_configs_folder, "goals.csv"), read_csv("./modules/defaults/default_goals.csv"))
+        copy_or_create(path.join(comp_year_configs_folder, "sub_goals.csv"), path.join(year_configs_folder, "sub_goals.csv"), read_csv("./modules/defaults/default_sub_goals.csv"))
+        copy_or_create(path.join(comp_year_configs_folder, "data.csv"), path.join(year_configs_folder, "data.csv"), read_csv("./modules/defaults/default_data.csv"))
     elif (
-        not create_csv(path.join(year_configs_folder, "./goals.csv"), read_csv("./default_goals.csv")) or 
-        not create_csv(path.join(year_configs_folder, "./sub_goals.csv"), read_csv("./default_sub_goals.csv")) or 
-        not create_csv(path.join(year_configs_folder, "./data.csv"), read_csv("./default_data.csv"))
+        not create_csv(path.join(year_configs_folder, "goals.csv"), read_csv("./modules/defaults/default_goals.csv")) or 
+        not create_csv(path.join(year_configs_folder, "sub_goals.csv"), read_csv("./modules/defaults/default_sub_goals.csv")) or 
+        not create_csv(path.join(year_configs_folder, "data.csv"), read_csv("./modules/defaults/default_data.csv"))
     ):
         return False
-    if not create_csv(path.join(year_configs_folder, "./configs.csv"), read_csv("./default_year_configs.csv")):
+    if not create_csv(path.join(year_configs_folder, "configs.csv"), read_csv("./modules/defaults/default_year_configs.csv")):
         return False
+    
+    for row in read_csv(f"{year_configs_folder}/data.csv")[1:]:
+        data = helper(row[1])
+        create_csv(f"{year_data_folder}/{row[0]}.csv", [data])
+        
+    for row in read_csv(f"{year_configs_folder}/sub_goals.csv")[1:]:
+        data = helper(row[3])
+        data.insert(0, "date")
+        create_csv(f"{year_targets_folder}/{row[0]}_targets.csv", [data])
     
     
     if not modify_cell(path.join(year_configs_folder, "configs.csv"), comp_year, "comp_year", "value"):
@@ -142,15 +151,17 @@ def report_create(directory: str, month: str) -> bool:
             return False
         month_folder = path.join(directory, f"{month} Report_{num}")
     
-    month_data_folder = path.join(month_folder, "Data")
-    month_outputs_folder = path.join(month_folder, "Outputs")
+    month_outputs_folder = path.join(month_folder, "outputs")
+    month_graphs_folder = path.join(month_outputs_folder, "graphs")
     if (
         not directory_create(month_folder) or 
-        not directory_create(month_data_folder) or 
-        not directory_create(month_outputs_folder)
+        not directory_create(month_outputs_folder) or 
+        not directory_create(month_graphs_folder)
     ):
         return False
-    ...
+    
+    copytree(f"{directory}/inputs", f"{month_folder}/inputs")
+    
     
     return True
     

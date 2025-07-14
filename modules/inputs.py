@@ -1,5 +1,6 @@
 from datetime import datetime
 from os import DirEntry, path, rename
+from typing import Any
 
 #TODO: Make sure all the success and error statements don't have leading whitespace.
 
@@ -8,6 +9,13 @@ def check_csv(path_to_file: str) -> bool:
         print(f"\033[0;31mError: No such file `{path_to_file}` exists.\033[0m")
         return False
     return True
+
+def helper(data_cell: str) -> list[str]:
+    data = data_cell.split(",")
+    if len(data) > 1:
+        data[0] = data[0][1:]
+        data[-1] = data[-1][:-1]
+    return data
 
 def read_csv(path_to_file: str) -> list:
     if not check_csv(path_to_file):
@@ -38,7 +46,7 @@ def read_csv(path_to_file: str) -> list:
     print(f"\033[0;32m Success: The file `{path_to_file}` was read without error.\033[0m")
     return data
 
-def write_csv(path_to_file: str, data: list) -> bool:
+def write_csv(path_to_file: str, data: list[list[Any]]) -> bool:
     if not check_csv(path_to_file):
         return False
     
@@ -52,7 +60,7 @@ def write_csv(path_to_file: str, data: list) -> bool:
     print(f"\033[0;32m Success: The file `{path_to_file}` was written without error.\033[0m")
     return True
 
-def create_csv(path_to_file: str, data: list) -> bool:
+def create_csv(path_to_file: str, data: list[list[Any]]) -> bool:
     if path.isfile(path_to_file):
         path_to_old_file = f"obsolete_on_{datetime.today().strftime('%Y-%m-%d')}_{path_to_file}"
         num = 2
@@ -78,9 +86,9 @@ def find_row(data: list[list], row: str) -> int:
     print(f"\033[0;31mError: The row {row} doesn't exist.\033[0m")
     return -1
 
-def find_column(data: list[list], column: str) -> int:
+def find_column(data: list, column: str) -> int:
     try:
-        return data[0].index(column)
+        return data.index(column)
     except ValueError:
         print(f"\033[0;31mError: The column {column} doesn't exist.\033[0m")
         return -1
@@ -90,8 +98,104 @@ def modify_cell(path_to_file: str, new_data: str, row_name: str, column_name: st
     if not data:
         return False
     row = find_row(data, row_name)
-    column = find_column(data, column_name)
+    column = find_column(data[0], column_name)
     if row == -1 or column == -1:
         return False
     data[row][column] = new_data
     return write_csv(path_to_file, data)
+
+
+def find_graph_data(time: str, 
+                    summed_column_cell: str, 
+                    year_data_files: list[list[list[str]]], 
+                    target_file: list[list[str]], 
+                    comp_year_files: list[list[list[str]]], 
+                    month: int) -> list[list[float]]:
+    data = []
+    summed = helper(summed_column_cell)
+    data.append(find_graph_data_helper(time, summed, year_data_files, month))
+    data.append([float(row[1]) for row in target_file[1:]])
+    data.append(find_graph_data_helper(time, summed, comp_year_files, month))
+    return data
+
+def find_graph_data_helper(time: str, summed: list[str], data_files: list[list[list[str]]], month: int) -> list[float]:
+    if not data_files:
+        return []
+    year = [7, 8, 9, 10, 11, 12, 1, 2, 3, 4, 5, 6]
+    month_index = year.index(month)
+    output = []
+    for i in range(month_index + 1):
+        output.append(0)
+    for data in data_files:
+        columns = []
+        for column in summed:
+            c = find_column(data[0], column)
+            if c != -1:
+                columns.append(c)
+            elif column == "rows": 
+                columns.append(column)
+        ending_row = 1
+        for m in range(month_index + 1):
+            starting_row = ending_row
+            while ending_row < len(data) and int(data[ending_row][0].split("/")[0]) == year[m]:
+                for c in columns:
+                    if c == "rows":
+                        output[m] += (ending_row + 1) - starting_row
+                        continue
+                    output[m] += float(data[ending_row][c])
+                ending_row += 1    
+    if time == "annual":
+        for i in range(1, len(output)):
+            output[i] += output[i - 1]
+    return output
+
+def find_targets(time: str, targets: list[list[str]], month: int) -> tuple[float, float]:
+    starting_row, ending_row = find_starting_row(targets, month)
+    if starting_row == -1:
+        print(f"\033[0;31mError: The target hasn't been initialized.\033[0m")
+        return (0, 0)
+    compared_value: float = float(targets[starting_row][1])
+    displayed_valued: float = compared_value
+    if time == "annual":
+        displayed_valued = float(targets[-1][1])
+    return (compared_value, displayed_valued)
+
+def find_data_files(data_files_cell: str, path_to_data: str) -> list[list[list[str]]]:
+    data_files = helper(data_files_cell)
+    data = []
+    for file in data_files:
+        data.append(read_csv(f"{path_to_data}/{file}.csv"))
+    return data
+
+def find_summed(time: str, summed_column_cell: str, data_files: list[list[list[str]]], month: int) -> float:
+    sum: float = 0
+    for data in data_files:
+        start_at, end_at = find_starting_row(data, month)
+        if time == "annual":
+            start_at = 1
+        elif start_at == -1:
+            continue
+        
+        header = data[0]
+        data = data[start_at:end_at]
+        summed = helper(summed_column_cell)
+        for column in summed:
+            c = find_column(header, column)
+            if c != -1:
+                for row in data:
+                    sum += int(row[c])
+            elif column == "rows":
+                    sum += len(data)
+    return float(sum)
+
+def find_starting_row(data: list[list[str]], month: int) -> tuple[int, int]:
+    starting_row = -1
+    ending_row = len(data)
+    for i in range(1, len(data)):
+        date = data[i][0].split("/")
+        if int(date[0]) == month and starting_row == -1:
+            starting_row = i
+        if (int(date[0]) > month or (month == 12 and int(date[0]) == 1)) and starting_row != -1:
+            ending_row = i
+            break
+    return (starting_row, ending_row)

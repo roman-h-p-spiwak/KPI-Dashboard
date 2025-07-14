@@ -1,4 +1,4 @@
 goal,percentage,(sub_goal_zero,sub_goal_one,sub_goal_two,...),
-Value Proposition & Visibility,.5,(Marketing Messages,Community Events,EXP {next_year} Nominations,EXP {next_year} Applications,EXP {next_year} Enrollment,Leap {year} Nominations,Leap {year} Applications,Leap {year} Enrollment),
-Community Engagement,.5,(LSM Lectures,Lecture Attendance,Calvert Attendance,Charles Attendance,St. Mary's Attendance,Satisfied/Very Satisfied,Interest Surveys),
+Value Proposition & Visibility,.5,(Marketing Messages,Community Events,EXP {year} Nominations,EXP {year} Applications,EXP {year} Enrollment,Leap {year} Nominations,Leap {year} Applications,Leap {year} Enrollment),
+Community Engagement,.5,(LSM Lectures,Lecture Attendance,Calvert Attendance,Charles Attendance,St. Mary's Attendance,Satisfied-Very Satisfied,Interest Surveys),
 Revenue,.5,(Fundraising Event Revenue,LSMAA Membership,LSMAA Revenue,Program Sponsors,LSM Lunch Sponsors,LSM Event Sponsors,Sponsorship Revenue),
