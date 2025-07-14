@@ -43,11 +43,9 @@ The general format goes:
 - [ ] [Set Up SCRUM Board](#set-up-scrum-board)
 - [ ] [Write Documentation](#write-documentation)
 - [ ] [API Input](#api-input)
-- [ ] [CSV Input](#csv-input)
-- [ ] [CSV Output](#csv-output)
+- [ ] [CSV](#csv)
 - [ ] [Directory Management](#directory-management)
-- [ ] [Year Management](#year-management)
-- [ ] [Report Management](#report-management)
+- [ ] [Main](#main)
 - [ ] [Data Visualization](#data-visualization)
 - [ ] [Data Modification](#data-modification)
 - [ ] [Report Finalization](#report-finalization)
@@ -130,31 +128,38 @@ The general format goes:
 
 ### API Input - Tasks
 
-## CSV Input
+## CSV
 
-**Definition of Done:** The application is capable of reading in every aspect of every piece of data for every sub-goal purely from .csv files. This ranges from yearly targets, to annual data, to monthly data, to the yearly sub-goals, to every single piece of data that gets stored in the report's folder after report finalization.
+**Definition of Done:** The application is capable of reading in every aspect of every piece of data for every sub-goal purely from .csv files. This ranges from yearly targets, to annual data, to monthly data, to the yearly sub-goals, to every single piece of data that gets stored in the report's folder after report finalization. The application is capable of modifying these .csv files, both by modifying certain and select cells, as well as writing and creating entire files.
 
 **Time:** This shouldn't take longer than a few hours.
 
 **As a stakeholder,** **I want** to make sure that if something changes with the APIs, the program can work using pure .csv files, **so that** it doesn't become utterly useless.
 
-### CSV Input - Tasks
+### CSV - Tasks
 
-- [ ] [Read-In](#read-in)
+- [x] [File Check](#file-check)
+- [x] [Read-In](#read-in)
+- [x] [Write-Out](#write-out)
+- [x] [Find Cell](#find-cell)
+
+### File Check
+
+- [x] Write a function that can check the existence of a file, ensuring that neither input nor output operations are performed on a non-existent file.
 
 ### Read-In
 
-- [ ] Write a function that can read a .csv file passed in as an argument, processes each line, as places it into a list which it returns.
+- [x] Write a function that can read a .csv file passed in as an argument, processes each line, as places it into a list which it returns.
 
-## CSV Output
+### Write-Out
 
-**Definition of Done:** The application is capable of offloading data, taken both from APIs and the user input, into .csv files. These .csv files should be the same ones that it is loading data from, and it should be capable of loading data to these files without corruption or duplication.
+- [x] Write a function that can write to a list of data passed as an argument to a .csv file pass in as an argument.
 
-**Time:** This shouldn't take longer than a few hours.
+### Find Cell
 
-**As a stakeholder,** **I want** the changes made to data, both from APIs and my input, to be saved to the offline files, **so that** I can see, at any point in the future, exactly what data was used to generate which report, even if the data from the API changes.
-
-### CSV Output - Tasks
+- [x] Write a function that can find a specific column by a name passed as an argument, in a list represented version of a .csv file passed as an argument.
+- [x] Write a function that can find a specific row by the 0th column's entry passed as an argument, in a list represented version of a .csv file passed as an argument.
+- [x] Write a function that can find a specific cell, via passed arguments for the column and row, in a .csv file found via a path passed as an argument. This function will then modify the cell to the new data passed as an argument, then write that data back to the file.
 
 ## Directory Management
 
@@ -168,9 +173,7 @@ The general format goes:
 
 - [ ] [Config Read-In](#config-read-in)
 - [x] [CSV Data Format](#csv-data-format)
-- [ ] [In-RAM Data Object](#in-ram-data-object)
-- [ ] [In-RAM Year Object](#in-ram-year-object)
-- [ ] [In-RAM Report Object](#in-ram-report-object)
+- [ ] [In-RAM Objects](#in-ram-objects)
 - [x] [Directory Indexing](#directory-indexing)
 - [ ] [Directory Creation](#directory-creation)
 - [ ] [Directory Management Documentation](#directory-management-documentation)
@@ -206,12 +209,11 @@ The general format goes:
 - [x] Lunch sponsor: 0th is date, 1st is lunch sponsor, 2nd is session, 3rd is pledged or paid, 4th is revenue. Second to last row is sum of all the lunch sponsors. Last is 0th column being `total` and 1st column being total sum of revenue. Target is cumulative sum of each month (so standard cumulative) for the number of lunch sponsors.
 - [x] Event sponsor: 0th is date, 1st is event sponsor, 2nd is event, 3rd is revenue. Second to last is a sum of all event sponsors, last is the sum of revenue. Target is cumulative sum of each month (so standard cumulative) for the number of event sponsors.
 - [x] Total sponsor revenue: This is just a sum of all the revenue of each sponsor. It should be 0th column as month, 1st as revenue. Target is the cumulative sum of each month (so standard cumulative) for the revenue.
+- [ ] Year Config:
 
-### In-RAM Data Object
+### In-RAM Objects
 
-### In-RAM Year Object
-
-### In-RAM Report Object
+- [ ] All data is represented in-RAM as a list of lists of strings. Essentially, it is just the .csv file in RAM. These objects shouldn't stay in RAM for long and should instead only be in RAM long enough to modify them as needed, or load them to perform operations on them.
 
 ### Directory Indexing
 
@@ -229,25 +231,24 @@ The general format goes:
 - [ ] Comment each function in the `directory_management.py` file, and add a comment to the top of the file explaining what happens in this file.
 - [ ] Write external documentation, ...
 
-## Year Management
+## Main
 
-**Definition of Done:** The application can create and edit years, including targets, annual data, and specifying the comparison year.
-
-**Time:** This should take a few hours.
-
-**As a stakeholder,** **I want** to be able to create years, edit the targets, and add and modify annual data, **so that** I can set up the years for each report, modify anything if new information comes in, and ensure that each report is accurate.
-
-### Year Management - Tasks
-
-## Report Management
-
-**Definition of Done:** The application can create reports, save report drafts, and onload new reports, re-generated reports, and report drafts.
+**Definition of Done:** The application can create and edit years, including targets, annual data, and specifying the comparison year. The application can create reports, save report drafts, and onload new reports, re-generated reports, and report drafts.
 
 **Time:** This could take a day.
 
-**As a stakeholder,** **I want** to be able to create and recreate reports and save a draft of a report, **so that** at a click of a button, the application can onload the information available and allow editing of reports.
+**As a stakeholder,** **I want** to be able to create and edit years and all that entails and create and edit reports and all that entails, **so that** I can set up use the application, creating years and reports in an easy and intuitive way.
 
-### Report Management - Tasks
+### Main - Tasks
+
+- [Year Management](#year-management)
+- [Report Management](#report-management)
+
+### Year Management
+
+- [ ] Write a function that, when passed the year and the comparison year as arguments,
+
+### Report Management
 
 ## Data Visualization
 
@@ -346,19 +347,35 @@ The general format goes:
 
 ### GUI - Tasks
 
-- [ ] [Research PyUIBuilder](#research-pyuibuilder)
+- [x] [Research PyUIBuilder](#research-pyuibuilder)
+- [ ] [Browser as FrontEnd](#browser-as-frontend)
 
 ### Research PyUIBuilder
 
-- [ ] [PyUIBuilder](https://pyuibuilder.com/).
-- [ ] [GitHub](https://github.com/PaulleDemon/PyUIBuilder).
+- [x] [PyUIBuilder](https://pyuibuilder.com/).
+- [x] [GitHub](https://github.com/PaulleDemon/PyUIBuilder).
 - [x] Look into the licensing.
 
-**Conclusion:** Looks like I'm free to use so long as I only use the WebApp.
+**Conclusion:** ~~Looks like I'm free to use so long as I only use the WebApp.~~ PyUIBuilder is not really all that good. I found using CustomTKinter as pure code to be much easier.
+
+### Browser as FrontEnd
+
+- [ ] [NiceGUI](https://nicegui.io/)
+- [ ] [Flask]
+
+## Header
+
+**Definition of Done:** The header for the entire application should exist and work. It will take up the top spot of the program, and contain a total of five buttons. In the top left corner, the settings button will always stay there. Next to it, will be a back arrow, that will take you from back one page, based entirely on which page you are currently on, and not which page was accessed previously. The back arrow will stop existing on the home page. Only on the home page, in the top right, there will be a report drafts button that, if clicked, will take the user to the Report Drafts page. When not on the home page, that section will be replaced by a go home button.
+
+**Time:** This shouldn't take longer than a couple of hours.
+
+**As a stakeholder,** **I want** a header, **so that** I can easily navigate the application.
+
+### Header - Tasks
 
 ## Homepage
 
-**Definition of Done:** The homepage should launch when the user opens the application. It should show a list of the years that the application was able to index. In one corner, it should display a settings button and a button to see the report drafts.
+**Definition of Done:** The homepage should launch when the user opens the application. It should show a list of the years that the application was able to index, with each year being a clickable button that takes the user to that year's page, as well as a button to create a new year.
 
 **Time:** This shouldn't take longer than a couple of hours.
 
@@ -396,9 +413,11 @@ The general format goes:
 
 ### New Year Page - Tasks
 
+- [ ] Clicking the New Year button will prompt the user to specify the year and the comparison year from a dropdown box. Once they click accept on both of those, the application will make verify that the specified year is available. If that is the case, application will generate a new year, and move the user to the edit a year page for that year.
+
 ## Year Page
 
-**Definition of Done:** A page that can be accessed by clicking on the specific year's button on the home page. In one corner, an edit year button will exist that, if clicked, will take the user to the edit year page for that year. In the center of the screen, a list of all months that the application was able to index for that year. At the top of the list, a new report button will exist. Clicking on the new report button will take the user to the new report page. Clicking on any of the reports will take the user to the report validation page for that report.
+**Definition of Done:** A page that can be accessed by clicking on the specific year's button on the home page. In one corner, an edit year button will exist that, if clicked, will take the user to the edit year page for that year. In the center of the screen, a list of all reports that the application was able to index for that year. At the top of the list, a new report button will exist. Clicking on the new report button will take the user to the new report page. Clicking on any of the reports will take the user to the report validation page for that report.
 
 **Time:** This is, once again, just a list of buttons. Hopefully, it shouldn't take much time.
 
@@ -408,7 +427,7 @@ The general format goes:
 
 ## Edit Year Page
 
-**Definition of Done:** A page that can be accessed by clicking the edit year button on a year's page. This page will display two buttons: one for editing the year's annual data and one for editing the year's targets. Each button should take the user to a new page. Clicking on the annual data button will take the user to a page that displays all the annual data in distinct boxes that can be edited. Any edits to the annual data will ask the user where this new data comes from. The user can refuse to answer, specify a new source, or edit the data of an existing source. Clicking on the target button will take the user to a grid of distinct boxes with one sub-goal's targets in each box. Clicking a box will allow the user to edit it.
+**Definition of Done:** A page that can be accessed by clicking the edit year button on a year's page. This page will display three buttons: one for editing the year's annual data, a second for editing the year's targets, and a third for editing the year's configs. Each button should take the user to a new page. Clicking on the annual data button will take the user to a page that displays all the annual data in distinct boxes that can be edited. Any edits to the annual data will ask the user where this new data comes from. The user can refuse to answer, specify a new source, or edit the data of an existing source. Clicking on the target button will take the user to a grid of distinct boxes with one sub-goal's targets in each box. Clicking a box will allow the user to edit it. Clicking on the configs button will take the user to a list of all the configurations for that year.
 
 **Time:** This one could take a while. It requires passing data from the front end to the back end. Maybe a day, possibly two.
 

@@ -1,67 +1,50 @@
-from datetime import datetime
-from os import DirEntry, makedirs, path, rename, scandir
+from os import DirEntry, makedirs, path, scandir
 from re import findall
 from shutil import copy
-from inputs import read_csv
+from modules.inputs import read_csv, create_csv, modify_cell, find_row
 
+def get_app_configs(path_to_file: str) -> list:
+    
+    data = read_csv(path_to_file)
+    if not data:
+        return create_app_configs(path_to_file)
+    
+    if not verify_app_configs(data):
+        return create_app_configs(path_to_file)
+    
+    return data
 
-DEFAULT_YEAR_CONFIGS = ""
+def verify_app_configs(data: list) -> bool:
+    home_directory_row = find_row(data, "home_directory")
+    try:
+        if home_directory_row == -1 or not path.exists(data[home_directory_row][1]):
+            return False
+        
+        button_height_row = find_row(data, "button_height")
+        if button_height_row == -1 or int(data[button_height_row][1]) <= 0:
+            return False
+        
+        button_width_row = find_row(data, "button_width")
+        if button_width_row == -1 or int(data[button_width_row][1]) <= 0:
+            return False
+        
+        ... #TODO: Populate with all the possible config data and checks.
+    except Exception as e:
+        print(f"\033[0;31mError: The data is formatted incorrectly, resulting in {e}.\033[0m")
+        return False
+    return True
 
-DEFAULT_GOALS = """goal,percentage,(sub_goal_zero,sub_goal_one,sub_goal_two,...),
-Value Proposition & Visibility,.5,(Marketing Messages,Community Events,EXP {next_year} Nominations,EXP {next_year} Applications,EXP {next_year} Enrollment,Leap {year} Nominations,Leap {year} Applications,Leap {year} Enrollment),
-Community Engagement,.5,(LSM Lectures,Lecture Attendance,Calvert Attendance,Charles Attendance,St. Mary's Attendance,Satisfied/Very Satisfied,Interest Surveys),
-Revenue,.5,(Fundraising Event Revenue,LSMAA Membership,LSMAA Revenue,Program Sponsors,LSM Lunch Sponsors,LSM Event Sponsors,Sponsorship Revenue),
-"""
-
-DEFAULT_SUB_GOALS = """sub_goal,data_file,storage,time,summed_column,committee,
-Marketing Messages,marketing_messages,report,monthly,messages,communications,
-Community Events,community_events,year,monthly,rows,communications,
-EXP {next_year} Nominations,exp_nominations,year,annual,nominations,recruiting,
-EXP {next_year} Applications,exp_applications,year,annual,applications,recruiting,
-EXP {next_year} Enrollment,exp_enrollment,year,annual,enrollment,recruiting,
-Leap {year} Nominations,leap_nominations,year,annual,nominations,leap/recruiting,
-Leap {year} Applications,leap_applications,year,annual,applications,leap/recruiting,
-Leap {year} Enrollment,leap_enrollment,year,annual,enrollment,leap/recruiting,
-LSM Lectures,lectures,year,annual,rows,alumni,
-Lecture Attendance,lectures,year,annual,(calvert,charles,st_mary),alumni,
-Calvert Attendance,lectures,year,annual,calvert,alumni,
-Charles Attendance,lectures,year,annual,charles,alumni,
-St. Mary's Attendance,lectures,year,annual,st_mary,alumni,
-Satisfied/Very Satisfied,lectures,year,annual,satisfaction,alumni,
-Interest Surveys,surveys,year,annual,surveys,alumni/program,
-Fundraising Event Revenue,fundraising,year,annual,revenue,development,
-LSMAA Membership,lsmaa,year,annual,enrollment,alumni,
-LSMAA Revenue,lsmaa,year,annual,revenue,alumni,
-Program Sponsors,program_sponsors,year,annual,rows,development,
-LSM Lunch Sponsors,lunch_sponsors,year,annual,rows,program,
-LSM Event Sponsors,event_sponsors,year,annual,rows,development,
-Sponsorship Revenue,(program_sponsors,lunch_sponsors,event_sponsors),year,annual,revenue,development,
-"""
-
-DEFAULT_DATA = """data_file_name,(data_column_zero,data_column_one,data_column_two,...),
-marketing_messages,(source,messages),
-community_events,(date,event_name,attendees),
-exp_nominations,(month,nominations),
-exp_applications,(month,applications),
-exp_enrollment,(month,enrollment),
-leap_nominations,(month,nominations),
-leap_applications,(month,applications),
-leap_enrollment,(month,enrollment),
-lectures,(title,date,calvert,charles,st_mary,satisfaction),
-surveys,(month,surveys),
-fundraising,(date,event,source,revenue),
-lsmaa,(month,enrollment,revenue),
-program_sponsors,(date,sponsor,number,level,revenue,notes),
-lunch_sponsors,(date,sponsor,session,pledged_paid,revenue,notes).
-event_sponsors,(date,sponsor,event,revenue,notes),
-"""
-
-
+def create_app_configs(path_to_file: str) -> list:
+    default_app_config = read_csv("./modules/default_app_configs.csv")
+    if create_csv(path_to_file, default_app_config):
+        return default_app_config
+    return []
 
 def year_index(directory: str) -> list[tuple]:
     return directory_index(directory, 0)
 
 def report_index(directory: str) -> list[tuple]:
+    #TODO: This should sort each report not alphabetically, but by the month (in the fiscal year).
     return directory_index(directory, 1)
 
 def draft_report_index(directory: str) -> list[tuple]:
@@ -94,7 +77,7 @@ def directory_check(entry: DirEntry, control: int) -> bool:
     print(f"\033[0;32m Success: Control variable `{control}` was properly passed.\033[0m")
     return len(x) == 1 and x[0] == entry.name
 
-def year_create(directory: str, year: str, comp_year = None) -> bool:
+def year_create(directory: str, year: str, comp_year = "") -> bool:
     year_folder = path.join(directory, year)
     year_configs_folder = path.join(year_folder, "Configs")
     year_data_folder = path.join(year_folder, "Data")
@@ -115,48 +98,38 @@ def year_create(directory: str, year: str, comp_year = None) -> bool:
             print(f"\033[0;31mError: The year `{comp_year}` doesn't exist.\033[0m")
             return False
         comp_year_configs_folder = path.join(comp_year_folder, "Configs")
-        # TODO: Clean up. This looks awful.
-        try:
-            copy(path.join(comp_year_configs_folder, "goals.csv"), path.join(year_configs_folder, "goals.csv"))
-        except FileNotFoundError:
-            print(f"\033[0;31mError: The `{comp_year}` `goals.csv` doesn't exist. Using default instead.\033[0m")
-            if not file_create(year_configs_folder, "goals.csv", DEFAULT_GOALS):
-                return False
-        except Exception as e:
-            print(f"\033[0;31mError: An unexpected error {e} occurred while attempting to copy `goals.csv` from {comp_year_configs_folder}.\033[0m")
-            return False
-        try:
-            copy(path.join(comp_year_configs_folder, "sub_goals.csv"), path.join(year_configs_folder, "sub_goals.csv"))
-        except FileNotFoundError:
-            print(f"\033[0;31mError: The `{comp_year}` `sub_goals.csv` doesn't exist. Using default instead.\033[0m")
-            if not file_create(year_configs_folder, "sub_goals.csv", DEFAULT_SUB_GOALS):
-                return False
-        except Exception as e:
-            print(f"\033[0;31mError: An unexpected error {e} occurred while attempting to copy `sub_goals.csv` from {comp_year_configs_folder}.\033[0m")
-            return False
-        try:
-            copy(path.join(comp_year_configs_folder, "data.csv"), path.join(year_configs_folder, "data.csv"))
-        except FileNotFoundError:
-            print(f"\033[0;31mError: The `{comp_year}` `data.csv` doesn't exist. Using default instead.\033[0m")
-            if not file_create(year_configs_folder, "data.csv", DEFAULT_DATA):
-                return False
-        except Exception as e:
-            print(f"\033[0;31mError: An unexpected error {e} occurred while attempting to copy `data.csv` from {comp_year_configs_folder}.\033[0m")
-            return False
+        
+        copy_or_create(path.join(comp_year_configs_folder, "./goals.csv"), path.join(year_configs_folder, "goals.csv"), read_csv("./default_goals.csv"))
+        copy_or_create(path.join(comp_year_configs_folder, "./sub_goals.csv"), path.join(year_configs_folder, "sub_goals.csv"), read_csv("./default_sub_goals.csv"))
+        copy_or_create(path.join(comp_year_configs_folder, "./data.csv"), path.join(year_configs_folder, "data.csv"), read_csv("./default_data.csv"))
     elif (
-        not file_create(year_configs_folder, "goals.csv", DEFAULT_GOALS) or 
-        not file_create(year_configs_folder, "sub_goals.csv", DEFAULT_SUB_GOALS) or 
-        not file_create(year_configs_folder, "data.csv", DEFAULT_DATA)
+        not create_csv(path.join(year_configs_folder, "./goals.csv"), read_csv("./default_goals.csv")) or 
+        not create_csv(path.join(year_configs_folder, "./sub_goals.csv"), read_csv("./default_sub_goals.csv")) or 
+        not create_csv(path.join(year_configs_folder, "./data.csv"), read_csv("./default_data.csv"))
     ):
         return False
-    if not file_create(year_configs_folder, "configs.csv", DEFAULT_YEAR_CONFIGS):
+    if not create_csv(path.join(year_configs_folder, "./configs.csv"), read_csv("./default_year_configs.csv")):
         return False
     
     
-        
-
+    if not modify_cell(path.join(year_configs_folder, "configs.csv"), comp_year, "comp_year", "value"):
+        return False
     
+    print(f"\033[0;32m Success: The directory for the year `{year}` was created without error.\033[0m")
     return True
+
+def copy_or_create(source: str, destination: str, data: list) -> bool:
+    try:
+        copy(source, destination)
+    except FileNotFoundError:
+        print(f"\033[0;31mError: The file `{source}` doesn't exist. Using default instead.\033[0m")
+        if not create_csv(destination, data):
+            return False
+    except Exception as e:
+        print(f"\033[0;31mError: An unexpected error {e} occurred while attempting to copy `{source}` to `{destination}`.\033[0m")
+        return False
+    return True
+    
 
 def report_create(directory: str, month: str) -> bool:
     month_folder = path.join(directory, f"{month} Report")
@@ -192,29 +165,3 @@ def directory_create(directory: str) -> bool:
     except Exception as e:
         print(f"\033[0;31mError: An unexpected error {e} occurred while attempting to create directory {directory}.\033[0m")
         return False
-
-
-def file_create(directory: str, file_name: str, default_content: str) -> bool:
-    path_to_file = path.join(directory, file_name)
-    if path.isfile(path_to_file):
-        old_file = f"{file_name}_obsolete_on_{datetime.today().strftime('%Y-%m-%d')}"
-        path_to_old_file = path.join(directory, old_file)
-        num = 2
-        if path.isfile(path_to_old_file):
-            while num <= 99 and path.isfile(f"{path_to_old_file}_{num}"):
-                num += 1
-            if num == 100:
-                print(f"\033[0;31mError: One-Hundred instances of `{old_file}` already exist.\033[0m")
-                return False
-            path_to_old_file += f"_{num}"
-            old_file += f"_{num}"
-        rename(path_to_file, f"{path_to_old_file}")
-        print(f"\033[0;32m Success: The file `{file_name}` was renamed to `{old_file}` without error.\033[0m")
-    
-    with open(path_to_file, "w") as file:
-        file.write(default_content)
-    print(f"\033[0;32m Success: The file `{file_name}` had the content `{default_content}` written without error.\033[0m")
-    return True
-
-file_create("./", "test.csv", "sub_goal, data_file, monthly, summed_column, (stuff, stuff1, stuff2, stuff3)")
-print(read_csv("./test.csv"))
