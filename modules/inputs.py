@@ -199,3 +199,23 @@ def find_starting_row(data: list[list[str]], month: int) -> tuple[int, int]:
             ending_row = i
             break
     return (starting_row, ending_row)
+
+def find_or_create_data_files(path_to_data: str, directory: str) -> list[str]:
+    files: list[str] = []
+    data_file: list[list[str]] = read_csv(path_to_data)
+    for row in data_file[1:]:
+        file_path = path.join(directory, f"{row[0]}.csv")
+        if not check_csv(file_path):
+            create_csv(file_path, [helper(row[1])])
+        files.append(file_path)
+    return files
+
+def find_or_create_target_files(path_to_data: str, directory: str) -> list[str]:
+    files: list[str] = []
+    data_file: list[list[str]] = read_csv(path_to_data)
+    for row in data_file[1:]:
+        file_path = path.join(directory, f"{row[0]}_targets.csv")
+        if not check_csv(file_path):
+            create_csv(file_path, [["date", row[1]]])
+        files.append(file_path)
+    return files

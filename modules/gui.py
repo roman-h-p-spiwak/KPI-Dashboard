@@ -4,7 +4,7 @@ from typing import Any, Callable
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
 from PIL import Image
-from modules.inputs import write_csv, read_csv, helper, find_row, find_data_files, find_summed, find_targets, find_graph_data
+from modules.inputs import write_csv, read_csv, helper, find_row, find_data_files, find_summed, find_targets, find_graph_data, find_or_create_data_files, find_or_create_target_files
 
 comp_year_color = "#CC0000"
 target_color = "#008800"
@@ -25,7 +25,6 @@ def create_graph(sub_goal: str,
     ax.set_ylabel(summed_column)
     ncols = 2
     if comp_year_data:
-        print(comp_year_data)
         ax.plot(year[:len(comp_year_data)], comp_year_data, marker="o", label=comp_year, color=comp_year_color)
         ncols += 1
     ax.plot(year[:len(target_data)], target_data, marker="o", label=f"{current_year} Target", color=target_color)
@@ -141,6 +140,8 @@ class CSVFrame(Page):
         
         self.data: list[list[str]] = [[""]]
         self.save_csv = save_csv
+        
+        self.quit_without_saving = False
         
         self.data_source_label = ctk.CTkLabel(self, text="")
         self.data_source_label.grid(row=0, column=0, stick="new")
@@ -532,8 +533,130 @@ class NewReportPage(Page):
         self.months.set(month)
         
 class EditYearPage(Page):
-    def __init__(self, master: App, year):
+    def __init__(self, master: App):
         super().__init__(master)
+        
+        self.edit_homepage = Page(self)
+        self.edit_homepage.place(in_=self, x=0, y=0, relwidth=1, relheight=1)
+        self.edit_homepage.grid_rowconfigure(0, weight=1)
+        self.edit_homepage.grid_rowconfigure(1, weight=1)
+        self.edit_homepage.grid_rowconfigure(2, weight=1)
+        self.edit_homepage.grid_rowconfigure(3, weight=1)
+        self.edit_homepage.grid_rowconfigure(4, weight=1)
+        self.edit_homepage.grid_rowconfigure(5, weight=1)
+        self.edit_homepage.grid_columnconfigure(0, weight=1)
+        
+        self.current_page = ""
+        self.path_to_year = ""
+        self.file_path = ""
+        
+        self.edit_data = ctk.CTkButton(self.edit_homepage, text="Edit Data", command=self.open_data)
+        self.edit_data.grid(row=0, column=0, sticky="nsew")
+        
+        self.edit_data = ctk.CTkButton(self.edit_homepage, text="Edit Data Content", command=self.open_data_content)
+        self.edit_data.grid(row=1, column=0, sticky="nsew")
+        
+        self.edit_data = ctk.CTkButton(self.edit_homepage, text="Edit Targets", command=self.open_targets)
+        self.edit_data.grid(row=2, column=0, sticky="nsew")
+        
+        self.edit_data = ctk.CTkButton(self.edit_homepage, text="Edit Configs", command=self.open_configs)
+        self.edit_data.grid(row=3, column=0, sticky="nsew")
+        
+        self.edit_data = ctk.CTkButton(self.edit_homepage, text="Edit Goals", command=self.open_goals)
+        self.edit_data.grid(row=4, column=0, sticky="nsew")
+        
+        self.edit_data = ctk.CTkButton(self.edit_homepage, text="Edit Sub-Goals", command=self.open_sub_goals)
+        self.edit_data.grid(row=5, column=0, sticky="nsew")
+        
+        self.edit_menu_page = Page(self)
+        self.edit_menu_page.place(in_=self, x=0, y=0, relwidth=1, relheight=1)
+        self.edit_menu_page.grid_rowconfigure(0, weight=1)
+        self.edit_menu_page.grid_columnconfigure(0, weight=1)
+
+        
+        self.edit_menu = ScrollableButtonFrame(self.edit_menu_page, self.open_file)
+        self.edit_menu.grid(row=0, column=0, sticky="nsew")
+        
+        self.edit_csv_page = CSVFrame(self, self.save_csv)
+        self.edit_csv_page.place(in_=self, x=0, y=0, relwidth=1, relheight=1)
+        
+        
+        
+    def initialize(self, path_to_year):
+        self.path_to_year = path_to_year
+        self.open_homepage()
+        pass
+        
+    def save_csv(self):
+        data = self.edit_csv_page.save_changes()
+        if not data:
+            return
+        write_csv(f"{self.file_path}", data)
+        pass
+        
+    def go_back(self) -> bool:
+        match self.current_page:
+            case "csv":
+                if self.edit_csv_page.has_changed() and not self.edit_csv_page.quit_without_saving:
+                    save_or_quit_year(self.edit_csv_page, self.save_csv, self.go_back)
+                else:
+                    self.edit_csv_page.quit_without_saving = False
+                    self.open_homepage()
+                return False
+            case "menu":
+                self.open_homepage()
+                return False
+            case "home":
+                return True
+            case _:
+                return True
+        
+    def open_homepage(self):
+        self.current_page = "home"
+        self.edit_homepage.show()
+        pass
+        
+    def open_file(self, file_name: str, path_to_file: str):
+        self.edit_csv_page.close()
+        data = read_csv(path_to_file)
+        self.edit_csv_page.populate_CSV_frame(file_name, data)
+        self.file_path = path_to_file
+        self.current_page = "csv"
+        self.edit_csv_page.show()
+        pass
+        
+    def open_data(self):
+        self.open_file("data.csv", f"{self.path_to_year}/configs/data.csv")
+        pass
+    
+    def open_data_content(self):
+        self.edit_menu.delete_buttons()
+        for path_to_file in find_or_create_data_files(f"{self.path_to_year}/configs/data.csv", f"{self.path_to_year}/inputs/data"):
+            self.edit_menu.add_button(path_to_file.split('\\')[-1], path_to_file)
+        self.current_page = "menu"
+        self.edit_menu_page.show()
+        pass
+    
+    def open_targets(self):
+        self.edit_menu.delete_buttons()
+        for path_to_file in find_or_create_target_files(f"{self.path_to_year}/configs/sub_goals.csv", f"{self.path_to_year}/inputs/targets"):
+            self.edit_menu.add_button(path_to_file.split('/')[-1], path_to_file)
+        self.current_page = "menu"
+        self.edit_menu_page.show()
+        pass
+    
+    def open_configs(self):
+        self.open_file("configs.csv", f"{self.path_to_year}/configs/configs.csv")
+        pass
+    
+    def open_goals(self):
+        self.open_file("goals.csv", f"{self.path_to_year}/configs/goals.csv")
+        pass
+    
+    def open_sub_goals(self):
+        self.open_file("sub_goals.csv", f"{self.path_to_year}/configs/sub_goals.csv")
+        pass
+    
         
         
 class YearPage(Page):
@@ -556,7 +679,7 @@ class YearPage(Page):
         
         self.year_path = ""
         
-        self.edit_year_button = ctk.CTkButton(self.year_header, text="Edit Year", command=lambda: edit_year(self.year_label.cget("text")), height=master.button_width, width=master.button_width)
+        self.edit_year_button = ctk.CTkButton(self.year_header, text="Edit Year", command=lambda: edit_year(self.year_path), height=master.button_width, width=master.button_width)
         self.edit_year_button.grid(row=0, column=1, sticky="ne")
         
         self.edit_year_button = ctk.CTkButton(self, text="Create Report", command=lambda: create_report(self.year_label.cget("text"), self.year_path, "Jan"), height=master.button_height) #TODO: Change the Starting Month.
@@ -743,7 +866,9 @@ class App(ctk.CTk):
         
         self.body_pages["new_year"] = NewYearPage(self, self.create_year)
         
-        self.body_pages["year"] = YearPage(self, print, self.open_new_report, self.open_report)
+        self.body_pages["edit_year"] = EditYearPage(self)
+        
+        self.body_pages["year"] = YearPage(self, self.open_edit_year, self.open_new_report, self.open_report)
         # self.body_pages["year"].place(in_=self.body, x=0, y=0, relwidth=1, relheight=1)
 
 
@@ -775,17 +900,19 @@ class App(ctk.CTk):
     def start_home(self):
         self.body_pages["home"].year_scroll_frame.delete_buttons()
         years = self.get_years(self.home_directory)
-        print(years)
         if len(years) != 0:
             for year, path in years:
                 self.body_pages["home"].year_scroll_frame.add_button(year, path)
         self.open_page("home")
 
     def open_new_year(self):
-        print("test")
         years = self.get_years(self.home_directory)
         self.body_pages["new_year"].initialize_dropdown([year for year, path in years])
         self.open_page("new_year")
+        
+    def open_edit_year(self, year_path):
+        self.body_pages["edit_year"].initialize(year_path)
+        self.open_page("edit_year")
         
     def open_year(self, year, path):
         
@@ -860,6 +987,9 @@ class App(ctk.CTk):
                 self.open_page("home")
             case "new_report":
                 self.open_page("year")
+            case "edit_year":
+                if self.body_pages["edit_year"].go_back():
+                    self.open_page("year")
             case "report_validation":
                 if self.body_pages["report_validation"].data_active:
                     if self.body_pages["report_validation"].has_changed() and not self.body_pages["report_validation"].override_quit:
@@ -882,14 +1012,14 @@ class App(ctk.CTk):
         else:
             self.not_home_control_page.show()
 
-def save_or_quit(report: ReportValidationPage, quit: Callable):
+def save_or_quit(csv: ReportValidationPage, quit: Callable):
         def quit_without_saving():
             save_or_quit_window.destroy()
-            report.override_quit = True
+            csv.override_quit = True
             quit()
         def quit_with_saving():
             save_or_quit_window.destroy()
-            report.save_csv()
+            csv.save_csv()
             quit()
         save_or_quit_window = ctk.CTkToplevel()
         save_or_quit_window.geometry("300x300")
@@ -914,3 +1044,37 @@ def save_or_quit(report: ReportValidationPage, quit: Callable):
         
         save_button = ctk.CTkButton(buttons_frame, text="Save and Exit", command=quit_with_saving)
         save_button.grid(row=0, column=1, sticky="e")
+        
+def save_or_quit_year(csv: CSVFrame, save: Callable, quit: Callable):
+        def quit_without_saving():
+            save_or_quit_window.destroy()
+            csv.quit_without_saving = True
+            quit()
+        def quit_with_saving():
+            save_or_quit_window.destroy()
+            save()
+            quit()
+        save_or_quit_window = ctk.CTkToplevel()
+        save_or_quit_window.geometry("300x300")
+        save_or_quit_window.title("Unsaved Changes")
+        save_or_quit_window.resizable(False, False)
+        save_or_quit_window.grab_set()
+        
+        save_or_quit_window.grid_rowconfigure(0, weight=1)
+        save_or_quit_window.grid_rowconfigure(1, weight=1)
+        
+        unsaved_changes_label = ctk.CTkLabel(save_or_quit_window, text="You have unsaved changes.\nWould you like to save and exist, or exist without saving?")
+        unsaved_changes_label.grid(row=0, column=0, sticky="nsew")
+        
+        buttons_frame = ctk.CTkFrame(save_or_quit_window)
+        buttons_frame.grid(row=1, column=0, sticky="nsew")
+        buttons_frame.grid_rowconfigure(0, weight=0)
+        buttons_frame.grid_columnconfigure(0, weight=0)
+        buttons_frame.grid_columnconfigure(1, weight=0)
+        
+        quit_button = ctk.CTkButton(buttons_frame, text="Exit Without Saving", command=quit_without_saving)
+        quit_button.grid(row=0, column=0, sticky="w")
+        
+        save_button = ctk.CTkButton(buttons_frame, text="Save and Exit", command=quit_with_saving)
+        save_button.grid(row=0, column=1, sticky="e")
+        
