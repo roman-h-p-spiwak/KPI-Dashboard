@@ -4,7 +4,7 @@ from typing import Any, Callable
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
 from PIL import Image
-from modules.inputs import write_csv, read_csv, helper, find_row, find_data_files, find_summed, find_targets, find_graph_data, find_or_create_data_files, find_or_create_target_files
+from modules.inputs import write_csv, read_csv, delete_csv, helper, find_row, find_data_files, find_summed, find_targets, find_graph_data, find_or_create_data_files, find_or_create_target_files
 
 comp_year_color = "#CC0000"
 target_color = "#008800"
@@ -307,7 +307,7 @@ class SubGoalFrame(Page):
     def set_graph(self, graph_path):
         self.graph_path = graph_path
         graph = Image.open(self.graph_path)
-        graph_image = ctk.CTkImage(light_image=graph, size=(640, 480))
+        graph_image = ctk.CTkImage(light_image=graph, size=(400, 300))
         self.graph_label.configure(image=graph_image)
     
     def populate_sub_goal_data(self, sub_goal: str, sum: float, target_num: float, target_text: str, committee: str, show_graph: bool):
@@ -327,20 +327,32 @@ class ScrollableButtonFrame(ctk.CTkScrollableFrame):
         
         self.grid_columnconfigure(0, weight=1)
         self.open_object = open_object
-        self.num_buttons = 0
         self.buttons = []
         
     def add_button(self, name, path):
-        new_button = ctk.CTkButton(self, text=name, command=lambda: self.open_object(name, path))
-        new_button.grid(row=self.num_buttons, column=0, padx=10, pady=10, sticky="ew")        
-        self.buttons.append(new_button)
-        self.num_buttons += 1
+        button_frame = ctk.CTkFrame(self)
+        button_frame.grid(row=len(self.buttons), column=0, padx=10, pady=10, sticky="ew")
+        button_frame.grid_rowconfigure(0, weight=1)
+        button_frame.grid_columnconfigure(0, weight=1)
+        button_frame.grid_columnconfigure(1, weight=0)
+        self.buttons.append(button_frame)
         
+        new_button = ctk.CTkButton(button_frame, text=name, command=lambda: self.open_object(name, path))
+        new_button.grid(row=0, column=0, sticky="ew")
+        
+        delete_button = ctk.CTkButton(button_frame, fg_color="red", text="Delete", width=40, command=lambda: self.delete_button(path, len(self.buttons) - 1))
+        delete_button.grid(row=0, column=1, sticky="e")
+        
+    
+    def delete_button(self, path, index):
+        button = self.buttons.pop(index)
+        button.destroy()
+        delete_csv(path)
+    
     def delete_buttons(self):
         while len(self.buttons) > 0:
             button = self.buttons.pop(0)
             button.destroy()
-        self.num_buttons = 0
    
 class ReportValidationPage(Page):
     def __init__(self, master):
@@ -349,6 +361,7 @@ class ReportValidationPage(Page):
         
         self.grid_rowconfigure(0, weight=0)
         self.grid_rowconfigure(1, weight=1)
+        self.grid_rowconfigure(2, weight=0)
         self.grid_columnconfigure(0, weight=1)
         
         self.goal_heading = ctk.CTkLabel(self, text="goal heading")
@@ -362,6 +375,9 @@ class ReportValidationPage(Page):
         
         self.sub_goal = SubGoalFrame(self.sub_goal_frame, self.open_data, self.left_arrow, self.right_arrow)
         self.sub_goal.place(x=0, y=0, relwidth=1, relheight=1)
+        
+        self.save_report_button = ctk.CTkButton(self, text="Save Report", command=lambda: print("Save Report"))
+        self.save_report_button.grid(row=2, column=0, sticky="sew")
         
         self.data_active = False
         
@@ -825,8 +841,8 @@ class App(ctk.CTk):
         self.on_home_control_page.grid_rowconfigure(0, weight=1)
         self.on_home_control_page.grid_columnconfigure(0, weight=1)
             # Report Drafts Button.
-        self.report_drafts_button = ctk.CTkButton(self.on_home_control_page, text="Report Drafts", command=lambda: self.open_page("draft"), height=button_height, width=button_width)
-        self.report_drafts_button.grid(row=0, column=0, sticky="e")
+        # self.report_drafts_button = ctk.CTkButton(self.on_home_control_page, text="Report Drafts", command=lambda: self.open_page("draft"), height=button_height, width=button_width)
+        # self.report_drafts_button.grid(row=0, column=0, sticky="e")
             # Place the Page.
         self.on_home_control_page.place(in_=self.control_buttons_frame, x=0, y=0, relwidth=1, relheight=1)
         
@@ -861,7 +877,7 @@ class App(ctk.CTk):
         # self.body_pages["home"].place(in_=self.body, x=0, y=0, relwidth=1, relheight=1)
         
             #Report Draft Page.
-        self.body_pages["drafts"] = ReportDraftsPage(self)
+        # self.body_pages["drafts"] = ReportDraftsPage(self)
         # self.body_pages["drafts"].place(in_=self.body, x=0, y=0, relwidth=1, relheight=1)
         
         self.body_pages["new_year"] = NewYearPage(self, self.create_year)

@@ -1,5 +1,6 @@
 from datetime import datetime
-from os import DirEntry, path, rename
+from os import DirEntry, path, rename, remove
+from shutil import rmtree
 from typing import Any
 
 #TODO: Make sure all the success and error statements don't have leading whitespace.
@@ -78,6 +79,16 @@ def create_csv(path_to_file: str, data: list[list[Any]]) -> bool:
     with open(path_to_file, "w"):
         pass
     return write_csv(path_to_file, data)
+
+def delete_csv(path_to_file: str):
+    if path.isfile(path_to_file):
+        remove(path_to_file)
+        print(f"\033[0;32m Success: The file `{path_to_file}` was successfully deleted without error.\033[0m")
+    elif path.isdir(path_to_file):
+        rmtree(path_to_file)
+        print(f"\033[0;32m Success: The folder `{path_to_file}` was successfully deleted without error.\033[0m")
+    else:
+        print(f"\033[0;31mError: The path `{path_to_file}` wasn't deleted as it doesn't exist.\033[0m")
 
 def find_row(data: list[list], row: str) -> int:
     for i in range(len(data)):
