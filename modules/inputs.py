@@ -63,7 +63,7 @@ def write_csv(path_to_file: str, data: list[list[Any]]) -> bool:
 
 def create_csv(path_to_file: str, data: list[list[Any]]) -> bool:
     if path.isfile(path_to_file):
-        path_to_old_file = f"obsolete_on_{datetime.today().strftime('%Y-%m-%d')}_{path_to_file}"
+        path_to_old_file = f"obsolete_on_{datetime.today().strftime('%Y-%m-%d')}_{path_to_file.split("/")[-1]}"
         num = 2
         if path.isfile(path_to_old_file):
             while num <= 99 and path.isfile(f"{path_to_old_file}_{num}"):
@@ -125,7 +125,8 @@ def find_graph_data(time: str,
     data = []
     summed = helper(summed_column_cell)
     data.append(find_graph_data_helper(time, summed, year_data_files, month))
-    data.append([float(row[1]) for row in target_file[1:]])
+    # data.append([float(row[1]) for row in target_file[1:]])
+    data.append(find_graph_data_helper(time, [target_file[0][1]], [target_file], 6))
     data.append(find_graph_data_helper(time, summed, comp_year_files, month))
     return data
 
@@ -158,6 +159,7 @@ def find_graph_data_helper(time: str, summed: list[str], data_files: list[list[l
     if time == "annual":
         for i in range(1, len(output)):
             output[i] += output[i - 1]
+    print(output)
     return output
 
 def find_targets(time: str, targets: list[list[str]], month: int) -> tuple[float, float]:

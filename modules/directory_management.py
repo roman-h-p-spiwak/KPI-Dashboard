@@ -6,6 +6,7 @@ from modules.inputs import helper, read_csv, create_csv, modify_cell, find_row
 def get_app_configs(path_to_file: str) -> list:
     
     data = read_csv(path_to_file)
+    print(data)
     if not data:
         return create_app_configs(path_to_file)
     
@@ -35,8 +36,11 @@ def verify_app_configs(data: list) -> bool:
     return True
 
 def create_app_configs(path_to_file: str) -> list:
-    default_app_config = read_csv("./modules/default_app_configs.csv")
+    default_app_config = read_csv("./modules/defaults/default_app_configs.csv")
     if create_csv(path_to_file, default_app_config):
+        home_directory_row = find_row(default_app_config, "home_directory")
+        if not path.exists(default_app_config[home_directory_row][1]):
+            makedirs(default_app_config[home_directory_row][1])
         return default_app_config
     return []
 
@@ -151,16 +155,18 @@ def report_create(directory: str, month: str) -> bool:
             return False
         month_folder = path.join(directory, f"{month} Report_{num}")
     
+    month_inputs_folder = path.join(month_folder, "inputs")
     month_outputs_folder = path.join(month_folder, "outputs")
     month_graphs_folder = path.join(month_outputs_folder, "graphs")
     if (
         not directory_create(month_folder) or 
+        not directory_create(month_inputs_folder) or 
         not directory_create(month_outputs_folder) or 
         not directory_create(month_graphs_folder)
     ):
         return False
     
-    copytree(f"{directory}/inputs", f"{month_folder}/inputs")
+    copytree(f"{directory}/inputs/data", f"{month_inputs_folder}/data")
     
     
     return True
