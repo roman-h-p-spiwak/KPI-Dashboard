@@ -2,6 +2,7 @@ from os import DirEntry, makedirs, path, scandir
 from re import findall
 from shutil import copy, copytree
 from modules.inputs import helper, read_csv, create_csv, modify_cell, find_row
+import modules.defaults as defaults
 
 def get_app_configs(path_to_file: str) -> list:
     
@@ -35,14 +36,13 @@ def verify_app_configs(data: list) -> bool:
         return False
     return True
 
-def create_app_configs(path_to_file: str) -> list:
-    default_app_config = read_csv("./modules/defaults/default_app_configs.csv")
-    if create_csv(path_to_file, default_app_config):
-        home_directory_row = find_row(default_app_config, "home_directory")
-        if not path.exists(default_app_config[home_directory_row][1]):
-            makedirs(default_app_config[home_directory_row][1])
-        return default_app_config
-    return []
+def create_app_configs(path_to_file: str) -> list[list[str]]:
+    if create_csv(path_to_file, defaults.APP_CONFIGS):
+        home_directory_row = find_row(defaults.APP_CONFIGS, "home_directory")
+        if not path.exists(defaults.APP_CONFIGS[home_directory_row][1]):
+            makedirs(defaults.APP_CONFIGS[home_directory_row][1])
+        return defaults.APP_CONFIGS
+    return [[""]]
 
 def year_index(directory: str) -> list[tuple]:
     return directory_index(directory, 0)
@@ -103,16 +103,16 @@ def year_create(directory: str, year: str, comp_year = "") -> bool:
             return False
         comp_year_configs_folder = path.join(comp_year_folder, "configs")
         
-        copy_or_create(path.join(comp_year_configs_folder, "goals.csv"), path.join(year_configs_folder, "goals.csv"), read_csv("./modules/defaults/default_goals.csv"))
-        copy_or_create(path.join(comp_year_configs_folder, "sub_goals.csv"), path.join(year_configs_folder, "sub_goals.csv"), read_csv("./modules/defaults/default_sub_goals.csv"))
-        copy_or_create(path.join(comp_year_configs_folder, "data.csv"), path.join(year_configs_folder, "data.csv"), read_csv("./modules/defaults/default_data.csv"))
+        copy_or_create(path.join(comp_year_configs_folder, "goals.csv"), path.join(year_configs_folder, "goals.csv"), defaults.GOALS)
+        copy_or_create(path.join(comp_year_configs_folder, "sub_goals.csv"), path.join(year_configs_folder, "sub_goals.csv"), defaults.SUB_GOALS)
+        copy_or_create(path.join(comp_year_configs_folder, "data.csv"), path.join(year_configs_folder, "data.csv"), defaults.DATA)
     elif (
-        not create_csv(path.join(year_configs_folder, "goals.csv"), read_csv("./modules/defaults/default_goals.csv")) or 
-        not create_csv(path.join(year_configs_folder, "sub_goals.csv"), read_csv("./modules/defaults/default_sub_goals.csv")) or 
-        not create_csv(path.join(year_configs_folder, "data.csv"), read_csv("./modules/defaults/default_data.csv"))
+        not create_csv(path.join(year_configs_folder, "goals.csv"), defaults.GOALS) or 
+        not create_csv(path.join(year_configs_folder, "sub_goals.csv"), defaults.SUB_GOALS) or 
+        not create_csv(path.join(year_configs_folder, "data.csv"), defaults.DATA)
     ):
         return False
-    if not create_csv(path.join(year_configs_folder, "configs.csv"), read_csv("./modules/defaults/default_year_configs.csv")):
+    if not create_csv(path.join(year_configs_folder, "configs.csv"), defaults.YEAR_CONFIGS):
         return False
     
     for row in read_csv(f"{year_configs_folder}/data.csv")[1:]:

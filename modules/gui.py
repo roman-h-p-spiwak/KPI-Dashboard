@@ -83,7 +83,7 @@ class ScrollableCSVFrame(ctk.CTkScrollableFrame):
         super().__init__(master)
         
         self.grid_columnconfigure(0, weight=1)
-        self.grid_rowconfigure(0)
+        self.grid_rowconfigure(0, weight=0)
         self.rows: list[tuple[ctk.CTkFrame, CSVRow]] = []
         self.length = 0
         
