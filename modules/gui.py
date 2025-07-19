@@ -5,7 +5,7 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
 from PIL import Image
 from modules.inputs import write_csv, read_csv, delete_csv, helper, find_row, find_data_files, find_summed, find_targets, find_graph_data, find_or_create_data_files, find_or_create_target_files, find_column
-
+from os import path
 comp_year_color = "#CC0000"
 target_color = "#008800"
 year_color = "#0000CC"
@@ -233,9 +233,9 @@ class CSVFrame(Page):
     def close(self):
         self.data_entires.destroy_rows()
         
-    def populate_CSV_frame(self, data_source, data):
+    def populate_CSV_frame(self, name_of_file, data):
         self.data = data
-        self.data_source_label.configure(text=data_source)
+        self.data_source_label.configure(text=name_of_file)
         self.populate_column(data[0])
         self.data_entires.populate_rows(data)
         
@@ -373,10 +373,10 @@ class ScrollableButtonFrame(ctk.CTkScrollableFrame):
         self.buttons = []
         
     def add_buttons(self, buttons: list[tuple[str, str]]):
-        for name, path in buttons:
-            self.add_button(name, path)
+        for button_path, name in buttons:
+            self.add_button(button_path, name)
         
-    def add_button(self, name: str, path: str):
+    def add_button(self, button_path: str, name: str):
         button_frame = ctk.CTkFrame(self)
         button_frame.grid(row=len(self.buttons), column=0, padx=10, pady=10, sticky="ew") # When a button is deleted, the rows get out of line. This has no visual effect.
         button_frame.grid_rowconfigure(0, weight=1)
@@ -384,17 +384,17 @@ class ScrollableButtonFrame(ctk.CTkScrollableFrame):
         button_frame.grid_columnconfigure(1, weight=0)
         self.buttons.append(button_frame)
         
-        new_button = ctk.CTkButton(button_frame, text=name, command=lambda: self.open_object(name, path))
+        new_button = ctk.CTkButton(button_frame, text=name, command=lambda: self.open_object(button_path, name))
         new_button.grid(row=0, column=0, sticky="ew")
         
-        delete_button = ctk.CTkButton(button_frame, fg_color="red", text="Delete", width=40, command=lambda: self.delete_button(path, button_frame))
+        delete_button = ctk.CTkButton(button_frame, fg_color="red", text="Delete", width=40, command=lambda: self.delete_button(button_path, button_frame))
         delete_button.grid(row=0, column=1, sticky="e")
         
     
-    def delete_button(self, path: str, button_frame: ctk.CTkFrame):
+    def delete_button(self, button_path: str, button_frame: ctk.CTkFrame):
         self.buttons.remove(button_frame)
         button_frame.destroy()
-        delete_csv(path)
+        delete_csv(button_path)
     
     def delete_buttons(self):
         while len(self.buttons) > 0:
@@ -452,7 +452,7 @@ class ReportValidationPage(Page):
             return
         sub_goal: list[str] = self.sub_goals[row]
         self.current_sub_goal_data = []
-        write_csv(f"{self.path_to_report}/inputs/data/{sub_goal[1]}.csv", data)
+        write_csv(path.join(self.path_to_report, "inputs", "data"), f"{sub_goal[1]}.csv", data)
         
     
     def has_changed(self):
@@ -463,7 +463,7 @@ class ReportValidationPage(Page):
         if row == -1:
             return
         sub_goal: list[str] = self.sub_goals[row]
-        self.current_sub_goal_data = read_csv(f"{self.path_to_report}/inputs/data/{sub_goal[1]}.csv")
+        self.current_sub_goal_data = read_csv(path.join(self.path_to_report, "inputs", "data"), f"{sub_goal[1]}.csv")
         self.sub_goal_data.populate_CSV_frame(f"{sub_goal[1]}.csv", self.current_sub_goal_data)
         self.data_active = True
         self.sub_goal_data.show()
@@ -530,16 +530,16 @@ class ReportValidationPage(Page):
         if row == -1:
             return
         sub_goal: list[str] = self.sub_goals[row]
-        data_files = find_data_files(sub_goal[1], f"{self.path_to_report}/inputs/data")
+        data_files = find_data_files(sub_goal[1], path.join(self.path_to_report, "inputs", "data"))
         current_sum: float = find_summed(sub_goal[2], sub_goal[3], data_files, self.month)
 
         comp_data_files = []
-        print(self.path_to_comp_year)
+        # print(self.path_to_comp_year)
         if self.path_to_comp_year:
-            comp_data_files = find_data_files(sub_goal[1], f"{self.path_to_comp_year}/inputs/data")
-            print(comp_data_files)
+            comp_data_files = find_data_files(sub_goal[1], path.join(self.path_to_year, "inputs", "data"))
+            # print(comp_data_files)
             # comp_current_sum: float = find_summed(sub_goal[2], sub_goal[3], comp_data_files, month)
-        target_file = read_csv(f"{self.path_to_year}/inputs/targets/{sub_goal[0]}_targets.csv")
+        target_file = read_csv(path.join(self.path_to_year, "inputs", "targets"), f"{sub_goal[0]}_targets.csv")
         targets: tuple[float, float] = find_targets(sub_goal[2], target_file, self.month)
         
         graph_data = find_graph_data(sub_goal[2], 
@@ -616,7 +616,8 @@ class EditYearPage(Page):
         
         self.current_page = ""
         self.path_to_year = ""
-        self.file_path = ""
+        self.path_to_file = ""
+        self.name_of_file = ""
         
         self.edit_data = ctk.CTkButton(self.edit_homepage, text="Edit Data", command=self.open_data)
         self.edit_data.grid(row=0, column=0, sticky="nsew")
@@ -659,7 +660,7 @@ class EditYearPage(Page):
         data = self.edit_csv_page.save_changes()
         if not data:
             return
-        write_csv(f"{self.file_path}", data)
+        write_csv(self.path_to_file, self.name_of_file, data)
         pass
         
     def go_back(self) -> bool:
@@ -684,45 +685,46 @@ class EditYearPage(Page):
         self.edit_homepage.show()
         pass
         
-    def open_file(self, file_name: str, path_to_file: str):
+    def open_file(self, path_to_file: str, name_of_file: str):
         self.edit_csv_page.close()
-        data = read_csv(path_to_file)
-        self.edit_csv_page.populate_CSV_frame(file_name, data)
-        self.file_path = path_to_file
+        data = read_csv(path_to_file, name_of_file)
+        self.edit_csv_page.populate_CSV_frame(name_of_file, data)
+        self.path_to_file = path_to_file
+        self.name_of_file = name_of_file
         self.current_page = "csv"
         self.edit_csv_page.show()
         pass
         
     def open_data(self):
-        self.open_file("data.csv", f"{self.path_to_year}/configs/data.csv")
+        self.open_file(path.join(self.path_to_year, "configs"), "data.csv")
         pass
     
     def open_data_content(self):
         self.edit_menu.delete_buttons()
-        for path_to_file in find_or_create_data_files(f"{self.path_to_year}/configs/data.csv", f"{self.path_to_year}/inputs/data"):
-            self.edit_menu.add_button(path_to_file.split('\\')[-1], path_to_file)
+        for path_to_file, name_of_file in find_or_create_data_files(path.join(self.path_to_year, "configs"), "data.csv", path.join(self.path_to_year, "inputs", "data")):
+            self.edit_menu.add_button(path_to_file, name_of_file)
         self.current_page = "menu"
         self.edit_menu_page.show()
         pass
     
     def open_targets(self):
         self.edit_menu.delete_buttons()
-        for path_to_file in find_or_create_target_files(f"{self.path_to_year}/configs/sub_goals.csv", f"{self.path_to_year}/inputs/targets"):
-            self.edit_menu.add_button(path_to_file.split('/')[-1], path_to_file)
+        for path_to_file, name_of_file in find_or_create_target_files(path.join(self.path_to_year, "configs"), "sub_goals.csv", path.join(self.path_to_year, "inputs", "targets")):
+            self.edit_menu.add_button(path_to_file, name_of_file)
         self.current_page = "menu"
         self.edit_menu_page.show()
         pass
     
     def open_configs(self):
-        self.open_file("configs.csv", f"{self.path_to_year}/configs/configs.csv")
+        self.open_file(path.join(self.path_to_year, "configs"), "configs.csv")
         pass
     
     def open_goals(self):
-        self.open_file("goals.csv", f"{self.path_to_year}/configs/goals.csv")
+        self.open_file(path.join(self.path_to_year, "configs"), "goals.csv")
         pass
     
     def open_sub_goals(self):
-        self.open_file("sub_goals.csv", f"{self.path_to_year}/configs/sub_goals.csv")
+        self.open_file(path.join(self.path_to_year, "configs"), "sub_goals.csv")
         pass
     
         
@@ -834,7 +836,6 @@ class Homepage(Page):
         self.year_scroll_frame = ScrollableButtonFrame(self, open_year)
         self.year_scroll_frame.grid(row=1, column=0, sticky="nsew")
         
-
 class App(ctk.CTk):
     def __init__(self, 
                  home_directory: str, 
@@ -925,6 +926,7 @@ class App(ctk.CTk):
             # Body Pages.
         self.body_pages = {}
         self.current_page = ""
+        self.i = 0
         
             # Homepage.
         self.body_pages["home"] = Homepage(self, self.open_new_year, self.open_year)
@@ -973,19 +975,26 @@ class App(ctk.CTk):
 
     def open_new_year(self):
         years = self.get_years(self.home_directory)
-        self.body_pages["new_year"].initialize_dropdown([year for year, path in years])
+        self.body_pages["new_year"].initialize_dropdown([year for year, year_path in years])
         self.open_page("new_year")
         
     def open_edit_year(self, year_path):
         self.body_pages["edit_year"].initialize(year_path)
         self.open_page("edit_year")
-        
-    def open_year(self, year, path):
+
+    def open_year(self, year_path, year):
         
         self.body_pages["year"].report_scroll_frame.delete_buttons()
         self.body_pages["year"].year_label.configure(text=year)
-        self.body_pages["year"].year_path = path
-        year_configs = read_csv(f"{path}/configs/configs.csv")
+        self.body_pages["year"].year_path = year_path
+        print(year_path, self.i)
+        self.i += 1
+        print(path.join(year_path, "configs"), self.i)
+        self.i += 1
+        
+        year_configs = read_csv(path.join(year_path, "configs"), "configs.csv")
+        print(year_configs, self.i)
+        self.i += 1
         comp_year = year_configs[find_row(year_configs, "comp_year")][1]
         comp_year_path = ""
         if comp_year != "None":
@@ -996,14 +1005,14 @@ class App(ctk.CTk):
                     break
             self.body_pages["year"].comp_year = int(comp_year.split("-")[1])
             self.body_pages["year"].comp_year_path = comp_year_path
-        self.body_pages["year"].report_scroll_frame.add_buttons(self.get_reports(path))
+        self.body_pages["year"].report_scroll_frame.add_buttons(self.get_reports(year_path))
         self.open_page("year")
 
     def open_new_report(self, year, path_to_year, month):
         self.body_pages["new_report"].initialize(year, path_to_year, month)
         self.open_page("new_report")
         
-    def open_report(self, report, path):
+    def open_report(self, report_path, report):
         
         months = {"Jul": 7, 
             "Aug": 8, 
@@ -1022,11 +1031,10 @@ class App(ctk.CTk):
         
         year_path = self.body_pages["year"].year_path
         year = self.body_pages["year"].year_label.cget("text").split("-")
-        read_csv(f"{year_path}/configs/goals.csv")
         self.body_pages["report_validation"].create_report(
-            read_csv(f"{year_path}/configs/goals.csv"), 
-            read_csv(f"{year_path}/configs/sub_goals.csv"), 
-            path, 
+            read_csv(path.join(year_path, "configs"), "goals.csv"), 
+            read_csv(path.join(year_path, "configs"), "sub_goals.csv"), 
+            report_path, 
             year_path,
             months[m[0]],
             int(year[-1]),
@@ -1072,7 +1080,7 @@ class App(ctk.CTk):
                     else:
                         self.body_pages["report_validation"].close_data()
                 else:
-                    self.open_year(self.body_pages["year"].year_label.cget("text"), self.body_pages["report_validation"].path_to_year)
+                    self.open_year(self.body_pages["report_validation"].path_to_year, self.body_pages["year"].year_label.cget("text"))
                 # if self.body_pages["report_validation"].is_saved:
                 #     pass
                 # else:
@@ -1152,4 +1160,3 @@ def save_or_quit_year(csv: CSVFrame, save: Callable, quit: Callable):
         
         save_button = ctk.CTkButton(buttons_frame, text="Save and Exit", command=quit_with_saving)
         save_button.grid(row=0, column=1, sticky="e")
-        

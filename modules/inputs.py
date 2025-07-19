@@ -5,9 +5,9 @@ from typing import Any
 
 #TODO: Make sure all the success and error statements don't have leading whitespace.
 
-def check_csv(path_to_file: str) -> bool:
-    if not path.isfile(path_to_file):
-        print(f"\033[0;31mError: No such file `{path_to_file}` exists.\033[0m")
+def check_csv(path_to_file: str, name_of_file: str) -> bool:
+    if not path.isfile(path.join(path_to_file, name_of_file)):
+        print(f"\033[0;31mError: No such file `{name_of_file}` exists at `{path_to_file}`.\033[0m")
         return False
     return True
 
@@ -18,12 +18,12 @@ def helper(data_cell: str) -> list[str]:
         data[-1] = data[-1][:-1]
     return data
 
-def read_csv(path_to_file: str) -> list:
-    if not check_csv(path_to_file):
+def read_csv(path_to_file: str, name_of_file: str) -> list:
+    if not check_csv(path_to_file, name_of_file):
         return []
     
     data = []
-    with open(path_to_file , 'r') as file:
+    with open(path.join(path_to_file, name_of_file) , 'r') as file:
         i = 0
         for line in file:
             data.append([])
@@ -44,41 +44,41 @@ def read_csv(path_to_file: str) -> list:
                     continue
                 entry += char
             i += 1
-    print(f"\033[0;32m Success: The file `{path_to_file}` was read without error.\033[0m")
+    print(f"\033[0;32m Success: The file `{name_of_file}` was read without error at `{path_to_file}`.\033[0m")
     return data
 
-def write_csv(path_to_file: str, data: list[list[Any]]) -> bool:
-    if not check_csv(path_to_file):
+def write_csv(path_to_file: str, name_of_file: str, data: list[list[Any]]) -> bool:
+    if not check_csv(path_to_file, name_of_file):
         return False
     
-    with open(path_to_file, 'w') as file:
+    with open(path.join(path_to_file, name_of_file), 'w') as file:
         for row in data:
             for column in row:
                 file.write(column)
                 file.write(',')
             file.write('\n')
         
-    print(f"\033[0;32m Success: The file `{path_to_file}` was written without error.\033[0m")
+    print(f"\033[0;32m Success: The file `{name_of_file}` at `{path_to_file}` was written without error.\033[0m")
     return True
 
-def create_csv(path_to_file: str, data: list[list[Any]]) -> bool:
-    if path.isfile(path_to_file):
-        path_to_old_file = f"obsolete_on_{datetime.today().strftime('%Y-%m-%d')}_{path_to_file.split("/")[-1]}"
+def create_csv(path_to_file: str, name_of_file: str, data: list[list[Any]]) -> bool:
+    if path.isfile(path.join(path_to_file, name_of_file)):
+        name_of_old_file = f"obsolete_on_{datetime.today().strftime('%Y-%m-%d')}"
         num = 2
-        if path.isfile(path_to_old_file):
-            while num <= 99 and path.isfile(f"{path_to_old_file}_{num}"):
+        if path.isfile(path.join(path_to_file, f"{name_of_old_file}_{name_of_file}")):
+            while num <= 99 and path.isfile(path.join(path_to_file, f"{name_of_old_file}_{num}_{name_of_file}")):
                 num += 1
             if num == 100:
-                print(f"\033[0;31mError: One-Hundred instances of `{path_to_old_file}` already exist.\033[0m")
+                print(f"\033[0;31mError: One-Hundred instances of `{name_of_old_file}_XX_{name_of_file}` already exist at `{path_to_file}`.\033[0m")
                 return False
-            path_to_old_file += f"_{num}"
-        rename(path_to_file, f"{path_to_old_file}")
-        print(f"\033[0;32m Success: The file `{path_to_file}` was renamed to `{path_to_old_file}` without error.\033[0m")
+            name_of_old_file += f"_{num}_{name_of_file}"
+        rename(path.join(path_to_file, name_of_file), path.join(path_to_file, name_of_old_file))
+        print(f"\033[0;32m Success: The file `{name_of_file}` was renamed to `{name_of_old_file}` at `{path_to_file}` without error.\033[0m")
     
     #? Is this a waste of resources? Opening and closing the file just to make it, before opening and closing the file to write to it?
-    with open(path_to_file, "w"):
+    with open(path.join(path_to_file, name_of_file), "w"):
         pass
-    return write_csv(path_to_file, data)
+    return write_csv(path_to_file, name_of_file, data)
 
 def delete_csv(path_to_file: str):
     if path.isfile(path_to_file):
@@ -94,18 +94,18 @@ def find_row(data: list[list], row: str) -> int:
     for i in range(len(data)):
         if data[i][0] == row:
             return i
-    print(f"\033[0;31mError: The row {row} doesn't exist.\033[0m")
+    print(f"\033[0;31mError: The row `{row}` doesn't exist.\033[0m")
     return -1
 
 def find_column(data: list, column: str) -> int:
     try:
         return data.index(column)
     except ValueError:
-        print(f"\033[0;31mError: The column {column} doesn't exist.\033[0m")
+        print(f"\033[0;31mError: The column `{column}` doesn't exist.\033[0m")
         return -1
 
-def modify_cell(path_to_file: str, new_data: str, row_name: str, column_name: str) -> bool:
-    data = read_csv(path_to_file)
+def modify_cell(path_to_file: str, name_of_file: str, new_data: str, row_name: str, column_name: str) -> bool:
+    data = read_csv(path_to_file, name_of_file)
     if not data:
         return False
     row = find_row(data, row_name)
@@ -113,7 +113,7 @@ def modify_cell(path_to_file: str, new_data: str, row_name: str, column_name: st
     if row == -1 or column == -1:
         return False
     data[row][column] = new_data
-    return write_csv(path_to_file, data)
+    return write_csv(path_to_file, name_of_file, data)
 
 
 def find_graph_data(time: str, 
@@ -159,7 +159,7 @@ def find_graph_data_helper(time: str, summed: list[str], data_files: list[list[l
     if time == "annual":
         for i in range(1, len(output)):
             output[i] += output[i - 1]
-    print(output)
+    # print(output)
     return output
 
 def find_targets(time: str, targets: list[list[str]], month: int) -> tuple[float, float]:
@@ -177,7 +177,7 @@ def find_data_files(data_files_cell: str, path_to_data: str) -> list[list[list[s
     data_files = helper(data_files_cell)
     data = []
     for file in data_files:
-        data.append(read_csv(f"{path_to_data}/{file}.csv"))
+        data.append(read_csv(path_to_data, f"{file}.csv"))
     return data
 
 def find_summed(time: str, summed_column_cell: str, data_files: list[list[list[str]]], month: int) -> float:
@@ -205,7 +205,7 @@ def find_starting_row(data: list[list[str]], month: int) -> tuple[int, int]:
     starting_row = -1
     ending_row = len(data)
     for i in range(1, len(data)):
-        date = data[i][0].split("/")
+        date = data[i][0].split("/") #TODO: Remove splitting like this.
         if int(date[0]) == month and starting_row == -1:
             starting_row = i
         if (int(date[0]) > month or (month == 12 and int(date[0]) == 1)) and starting_row != -1:
@@ -213,22 +213,20 @@ def find_starting_row(data: list[list[str]], month: int) -> tuple[int, int]:
             break
     return (starting_row, ending_row)
 
-def find_or_create_data_files(path_to_data: str, directory: str) -> list[str]:
-    files: list[str] = []
-    data_file: list[list[str]] = read_csv(path_to_data)
+def find_or_create_data_files(path_to_file: str, name_of_file: str, directory: str) -> list[tuple[str, str]]:
+    files: list[tuple[str, str]] = []
+    data_file: list[list[str]] = read_csv(path_to_file, name_of_file)
     for row in data_file[1:]:
-        file_path = path.join(directory, f"{row[0]}.csv")
-        if not check_csv(file_path):
-            create_csv(file_path, [helper(row[1])])
-        files.append(file_path)
+        if not check_csv(path_to_file, name_of_file):
+            create_csv(directory, f"{row[0]}.csv", [helper(row[1])])
+        files.append((directory, f"{row[0]}.csv"))
     return files
 
-def find_or_create_target_files(path_to_data: str, directory: str) -> list[str]:
-    files: list[str] = []
-    data_file: list[list[str]] = read_csv(path_to_data)
+def find_or_create_target_files(path_to_file: str, name_of_file: str, directory: str) -> list[tuple[str, str]]:
+    files: list[tuple[str, str]] = []
+    data_file: list[list[str]] = read_csv(path_to_file, name_of_file)
     for row in data_file[1:]:
-        file_path = path.join(directory, f"{row[0]}_targets.csv")
-        if not check_csv(file_path):
-            create_csv(file_path, [["date", row[1]]])
-        files.append(file_path)
+        if not check_csv(path_to_file, name_of_file):
+            create_csv(directory, f"{row[0]}_targets.csv", [["date", row[1]]])
+        files.append((directory, f"{row[0]}_targets.csv"))
     return files

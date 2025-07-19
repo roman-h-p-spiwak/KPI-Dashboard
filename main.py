@@ -1,17 +1,30 @@
 from modules.directory_management import year_create, report_create, year_index, report_index, get_app_configs
 from modules.inputs import find_row, find_column
 from modules.gui import App
+import sys
+from os import path
 
-CONFIGS = "./configs.csv"
-configs = get_app_configs(CONFIGS)
-home_directory = configs[find_row(configs, "home_directory")][1]
+
+def get_base_path():
+    if getattr(sys, 'frozen', False):
+        return path.dirname(sys.executable)
+    else:
+        return path.dirname(path.abspath(__file__))
+
+def resource_path(relative_path = ""):
+    return path.join(get_base_path(), relative_path)
+
+
+CONFIGS = get_app_configs(resource_path(), "configs.csv")
+print(resource_path(CONFIGS[find_row(CONFIGS, "home_directory")][1]))
+HOME_DIRECTORY = resource_path(CONFIGS[find_row(CONFIGS, "home_directory")][1])
 
 def create_years(year: str, comp_year: str):
     
-    if not year_create(home_directory, year, comp_year):
+    if not year_create(HOME_DIRECTORY, year, comp_year):
         return
 
-    year_index(home_directory)
+    year_index(HOME_DIRECTORY)
 
     pass
 
@@ -19,9 +32,9 @@ def create_years(year: str, comp_year: str):
 def main():
 
     
-    app = App(home_directory, 
-              int(configs[find_row(configs, "button_height")][1]), 
-              int(configs[find_row(configs, "button_width")][1]), 
+    app = App(HOME_DIRECTORY, 
+              int(CONFIGS[find_row(CONFIGS, "button_height")][1]), 
+              int(CONFIGS[find_row(CONFIGS, "button_width")][1]), 
               year_index, 
               report_index, 
               year_create, 

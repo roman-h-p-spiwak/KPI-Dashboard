@@ -1,5 +1,5 @@
 APP_CONFIGS = [['config', 'value'], 
-                       ['home_directory', './.testdata/'],
+                       ['home_directory', '.testdata'],
                        ['button_width', '40'],
                        ['button_height', '40']]
 DATA = [['data_file_name', '(date,data_column_one,data_column_two,...)'], 
