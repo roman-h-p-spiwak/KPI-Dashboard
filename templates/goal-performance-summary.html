@@ -1,0 +1,15 @@
+{% extends "page.html" %}
+
+{% block content %}
+
+    <div class="is-size-3 has-text-centered has-text-black">Goal Performance Summary</div>
+      <div class="fixed-grid has-3-cols" style="border: 1px solid black;">
+        <div class="grid is-column-gap-0 is-row-gap-0 has-text-centered has-text-black">
+            {% for goal in goals %}
+                {% set goal_num = loop.index %}
+                {% include "gps-goal.html" %}
+            {% endfor %}
+        </div>
+      </div>
+
+{% endblock %}

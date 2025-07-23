@@ -1,10 +1,57 @@
-from os import DirEntry, makedirs, path, scandir
+from os import DirEntry, makedirs, path, scandir, startfile
+import sys
+from pathlib import Path
 from re import findall
 from shutil import copy, copytree
 from modules.inputs import helper, read_csv, create_csv, modify_cell, find_row
 import modules.defaults as defaults
+from modules.objects import SubGoal
+from typing import Any
+from pathlib import Path
+from weasyprint import HTML, CSS
+from jinja2 import Environment, FileSystemLoader, select_autoescape
+from subprocess import call
+from platform import system
 
+def report_finalization(path_to_report: str, report_name: str,  year: str, goals_sub_goals: list[tuple[list[str], list[SubGoal]]]) -> bool:
+    env = Environment(
+        loader=FileSystemLoader("templates"),
+        autoescape=select_autoescape()
+    )
+    template = env.get_template("index.html")
+    path_to_file = resource_path(path.join(path_to_report, "outputs", "reports"))
+    file_path = resource_path(path.join(path_to_file, f"{report_name}.pdf"))
+    HTML(string=template.render(
+    year=year[1], 
+    month=report_name.split(" ")[0], 
+    goals=goals_sub_goals),
+     base_url=Path(".").resolve()).write_pdf(
+    file_path,
+    stylesheets=[
+        CSS(filename="static/style.css"),
+        CSS(filename="static/bulma.css")
+        ])
+    
+    if system() == 'Darwin':       # macOS
+        call(('open', file_path))
+    elif system() == 'Windows':    # Windows
+        startfile(file_path)
+    else:                          # linux variants
+        call(('xdg-open', file_path))
+    
+    return True
 
+def get_base_path():
+    if getattr(sys, 'frozen', False):
+        return path.dirname(sys.executable)
+    else:
+        return path.dirname(path.abspath(sys.argv[0]))
+
+def resource_path(relative_path = ""):
+    return path.join(get_base_path(), relative_path)
+
+def resource_uri(path: str) -> str:
+    return Path(resource_path(path)).resolve().as_uri()
 
 def get_app_configs(path_to_config: str, config_name: str = "configs.csv") -> list:
     
@@ -158,18 +205,26 @@ def report_create(directory: str, month: str) -> bool:
             return False
         month_folder = path.join(directory, f"{month} Report_{num}")
     
+    month_configs_folder = path.join(month_folder, "configs")
     month_inputs_folder = path.join(month_folder, "inputs")
     month_outputs_folder = path.join(month_folder, "outputs")
     month_graphs_folder = path.join(month_outputs_folder, "graphs")
+    month_reports_folder = path.join(month_outputs_folder, "reports")
     if (
         not directory_create(month_folder) or 
+        not directory_create(month_configs_folder) or 
         not directory_create(month_inputs_folder) or 
         not directory_create(month_outputs_folder) or 
-        not directory_create(month_graphs_folder)
+        not directory_create(month_graphs_folder) or 
+        not directory_create(month_reports_folder)
     ):
         return False
     
-    copytree(f"{directory}/inputs/data", f"{month_inputs_folder}/data")
+    copy_or_create(path.join(directory, "configs"), "data.csv", month_configs_folder, "data.csv", defaults.DATA)
+    copy_or_create(path.join(directory, "configs"), "goals.csv", month_configs_folder, "goals.csv", defaults.GOALS)
+    copy_or_create(path.join(directory, "configs"), "sub_goals.csv", month_configs_folder, "sub_goals.csv", defaults.SUB_GOALS)
+    
+    copytree(path.join(directory, "inputs", "data"), path.join(month_inputs_folder, "data"))
     
     
     return True

@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8">
+    <title>KPI Dashboard Report</title>
+    <link rel="stylesheet" href="../static/bulma.css">
+    <!--<link rel="stylesheet" href="../static/style.css">-->
+  </head>
+
+  <body>
+
+    {% include "goal-performance-summary.html" %}
+      {% for goal in goals %}
+        {% set goal_num = loop.index %}
+        {% include "goal.html" %}
+    {% endfor %}
+  </body>
+</html>

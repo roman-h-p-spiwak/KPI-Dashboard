@@ -5,6 +5,8 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
 from PIL import Image
 from modules.inputs import write_csv, read_csv, delete_csv, helper, find_row, find_data_files, find_summed, find_targets, find_graph_data, find_or_create_data_files, find_or_create_target_files, find_column
+from modules.objects import SubGoal
+from modules.directory_management import report_finalization, resource_uri
 from os import path
 comp_year_color = "#CC0000"
 target_color = "#008800"
@@ -364,6 +366,106 @@ class SubGoalFrame(Page):
             self.show_graph_checkbox.deselect()
         self.show_graph()
 
+class GoalFrame(Page):
+    def __init__(self, master, left: Callable, generate_pdf: Callable, save: Callable):
+        super().__init__(master)
+        
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=0)
+        self.grid_columnconfigure(1, weight=1)
+        self.grid_columnconfigure(2, weight=0)
+        
+        self.left_arrow = ctk.CTkButton(self, text="<", command=left, width=40)
+        self.left_arrow.grid(row=0, column=0, sticky="nsew")
+        
+        self.generate_pdf_button = ctk.CTkButton(self, text="Generate PDF", command=generate_pdf, width=40)
+        self.generate_pdf_button.grid(row=0, column=2, sticky="nsew")
+        
+        self.body_frame = ctk.CTkFrame(self)
+        self.body_frame.grid(row=0, column=1, sticky="nsew")
+        self.body_frame.grid_rowconfigure(0, weight=1)
+        self.body_frame.grid_rowconfigure(1, weight=0)
+        self.body_frame.grid_columnconfigure(0, weight=1)
+        
+        self.goal_frame = ScrollableGoalFrame(self.body_frame)
+        self.goal_frame.grid(row=0, column=0, sticky="nsew")
+        
+        self.save_button = ctk.CTkButton(self.body_frame, text="Save Data", command=save)
+        self.save_button.grid(row=1, column=0, sticky="ew")
+        
+    def populate_goals(self, goals: list[list[str]]):
+        self.goal_frame.add_goals(goals[1:])
+        
+    def save_data(self) -> list[tuple[str, str]]:
+        return self.goal_frame.out_load_data()
+        
+
+class Goal(ctk.CTkFrame):
+    def __init__(self, master):
+        super().__init__(master)
+        
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_rowconfigure(1, weight=1)
+        self.grid_rowconfigure(2, weight=1)
+        self.grid_rowconfigure(3, weight=1)
+        self.grid_columnconfigure(0, weight=1)
+        
+        self.goal_number = ctk.CTkLabel(self, text=f"GOAL 0")
+        self.goal_number.grid(row=0, column=0, sticky="ew")
+        
+        self.goal_name = ctk.CTkLabel(self, text="")
+        self.goal_name.grid(row=1, column=0, sticky="ew")
+        
+        self.goal_percent = ctk.CTkTextbox(self, height=80)
+        # goal_percent.insert("0.0", goal[1])
+        self.goal_percent.grid(row=2, column=0, sticky="ew")
+        
+        self.goal_extra_data = ctk.CTkTextbox(self, height=80)
+        # goal_extra_data.insert("0.0", goal[3])
+        self.goal_extra_data.grid(row=3, column=0, sticky="ew")
+        
+    def get_percent(self) -> str:
+        try:
+            return str(float(self.goal_percent.get("0.0", "end-1c").strip()))
+        except:
+            print("ERROR")
+            return "0.0"
+    
+    def get_extra_data(self) -> str:
+        return self.goal_extra_data.get("0.0", "end-1c").strip()
+
+class ScrollableGoalFrame(ctk.CTkScrollableFrame):
+    def __init__(self, master):
+        super().__init__(master, orientation="horizontal")
+        
+        self.grid_rowconfigure(0, weight=1)
+        self.goals: list[Goal] = []
+        
+    def add_goals(self, goals: list[list[str]]):
+        
+        self.goals.clear()
+        for goal in goals:
+            self.add_goal(goal)
+    
+    def add_goal(self, goal: list[str]):
+        
+        g = Goal(self)
+        self.grid_columnconfigure(len(self.goals), weight=1)
+        g.grid(row=0, column=len(self.goals), sticky="nsew")
+        
+        g.goal_number.configure(text=f"GOAL {len(self.goals) + 1}")
+        g.goal_name.configure(text=goal[0])
+        g.goal_percent.insert("0.0", goal[1])
+        g.goal_extra_data.insert("0.0", goal[3])
+        
+        self.goals.append(g)
+    
+    def out_load_data(self) -> list[tuple[str, str]]:
+        output: list[tuple[str, str]] = []
+        for goal in self.goals:
+            output.append((goal.get_percent(), goal.get_extra_data()))
+        return output
+
 class ScrollableButtonFrame(ctk.CTkScrollableFrame):
     def __init__(self, master, open_object):
         super().__init__(master)
@@ -408,7 +510,7 @@ class ReportValidationPage(Page):
         
         self.grid_rowconfigure(0, weight=0)
         self.grid_rowconfigure(1, weight=1)
-        self.grid_rowconfigure(2, weight=0)
+        # self.grid_rowconfigure(2, weight=0)
         self.grid_columnconfigure(0, weight=1)
         
         self.goal_heading = ctk.CTkLabel(self, text="goal heading")
@@ -423,12 +525,18 @@ class ReportValidationPage(Page):
         self.sub_goal = SubGoalFrame(self.sub_goal_frame, self.open_data, self.left_arrow, self.right_arrow)
         self.sub_goal.place(x=0, y=0, relwidth=1, relheight=1)
         
-        self.save_report_button = ctk.CTkButton(self, text="Save Report", command=lambda: print("Save Report"))
-        self.save_report_button.grid(row=2, column=0, sticky="sew")
+        self.goal_data = GoalFrame(self.sub_goal_frame, self.left_arrow, self.generate_pdf, self.save_goals)
+        self.goal_data.place(x=0, y=0, relwidth=1, relheight=1)
+        
+        self.sub_goal.show()
+        
+        # self.save_report_button = ctk.CTkButton(self, text="Save Report", command=lambda: print("Save Report"))
+        # self.save_report_button.grid(row=2, column=0, sticky="sew")
         
         self.data_active = False
         
         self.goals = []
+        self.goals_sub_goals = []
         self.sub_goals = []
         self.current_goal = -1
         self.current_sub_goal = -1
@@ -436,18 +544,30 @@ class ReportValidationPage(Page):
         
         self.path_to_year = ""
         self.path_to_report = ""
+        self.report_name = ""
+        self.year = ""
         self.path_to_comp_data = ""
         self.month = 0
         self.current_year = 0
         self.comp_year = 0
         self.override_quit = False
     
+    def save_goals(self):
+        
+        data = self.goal_data.save_data()
+        
+        for i in range(1, len(self.goals)):
+            self.goals[i][1] = data[i - 1][0]
+            self.goals[i][3] = data[i - 1][1]
+        
+        write_csv(path.join(self.path_to_report, "configs"), "goals.csv", self.goals)
+    
     def save_csv(self):
         
         data = self.sub_goal_data.save_changes()
         if not data:
             return
-        row = find_row(self.sub_goals, self.goals[self.current_goal][2][self.current_sub_goal])
+        row = find_row(self.sub_goals, self.goals_sub_goals[self.current_goal][self.current_sub_goal])
         if row == -1:
             return
         sub_goal: list[str] = self.sub_goals[row]
@@ -459,7 +579,7 @@ class ReportValidationPage(Page):
         return self.sub_goal_data.has_changed()
     
     def open_data(self, event):
-        row = find_row(self.sub_goals, self.goals[self.current_goal][2][self.current_sub_goal])
+        row = find_row(self.sub_goals, self.goals_sub_goals[self.current_goal][self.current_sub_goal])
         if row == -1:
             return
         sub_goal: list[str] = self.sub_goals[row]
@@ -477,24 +597,30 @@ class ReportValidationPage(Page):
         self.sub_goal.show()
         
     def create_report(self, 
-                      goals: list[list[Any]], 
-                      sub_goals: list[list[str]], 
                       path_to_report: str,
-                      path_to_year: str, 
+                      report_name: str, 
+                      path_to_year: str,
+                      year: str,  
                       month: int, 
                       current_year: int = 0, 
                       comp_year: int = 0, 
                       path_to_comp_year: str = ""):
-        self.goals = goals
-        for row in range(len(self.goals)):
-            self.goals[row][2] = helper(self.goals[row][2])
-        self.sub_goals = sub_goals
         
-        self.goal_heading.configure(text=goals[1][0])
+        self.goals = read_csv(path.join(path_to_report, "configs"), "goals.csv")
+        self.sub_goals = read_csv(path.join(path_to_report, "configs"), "sub_goals.csv")
+        for row in range(len(self.goals)):
+            self.goals_sub_goals.append(helper(self.goals[row][2]))
+
+        self.goal_heading.configure(text=self.goals[1][0])
         self.current_goal = 1
         self.current_sub_goal = 0
+        self.sub_goal_objects: list[tuple[list[str], list[SubGoal]]] = []
+        for goal in self.goals:
+            self.sub_goal_objects.append((goal, []))
         
+        self.report_name = report_name
         self.path_to_year = path_to_year
+        self.year = year
         self.path_to_report = path_to_report
         self.month = month
         self.current_year = current_year
@@ -505,7 +631,7 @@ class ReportValidationPage(Page):
         self.current_sub_goal -= 1
         if self.current_sub_goal < 0:
             self.current_goal -= 1
-            self.current_sub_goal = 0
+            self.current_sub_goal = len(self.goals_sub_goals[self.current_goal]) - 1
             self.goal_heading.configure(text=self.goals[self.current_goal][0])
         if self.current_goal == 0 and self.current_sub_goal == 0:
             self.sub_goal.left_arrow.configure(state="disabled")
@@ -515,18 +641,27 @@ class ReportValidationPage(Page):
     
     def right_arrow(self):
         self.current_sub_goal += 1
-        if self.current_sub_goal == len(self.goals[self.current_goal][2]):
+
+        if self.current_sub_goal == len(self.goals_sub_goals[self.current_goal]):
             self.current_goal += 1
             self.current_sub_goal = 0
+            if self.current_goal == len(self.goals):
+                self.goal_data.populate_goals(self.goals)
+                self.goal_data.show()
+                return
             self.goal_heading.configure(text=self.goals[self.current_goal][0])
-        if self.current_goal == len(self.goals) - 1 and self.current_sub_goal == len(self.goals[self.current_goal][2]) - 1:
-            self.sub_goal.right_arrow.configure(state="disabled")
         else:
+            self.sub_goal.right_arrow.configure(text=">")
             self.sub_goal.right_arrow.configure(state="normal")
         self.generate_sub_goal()
     
-    def generate_sub_goal(self):
-        row = find_row(self.sub_goals, self.goals[self.current_goal][2][self.current_sub_goal])
+    def generate_pdf(self):
+        
+        report_finalization(self.path_to_report, self.report_name, self.year, self.sub_goal_objects[1:])
+        pass
+    
+    def generate_sub_goal(self): #! This is inefficient. Why regenerate the sub_goal if it hasn't changed? If we're just switching panels, it doesn't matter.
+        row = find_row(self.sub_goals, self.goals_sub_goals[self.current_goal][self.current_sub_goal])
         if row == -1:
             return
         sub_goal: list[str] = self.sub_goals[row]
@@ -556,13 +691,32 @@ class ReportValidationPage(Page):
                                 self.path_to_report, 
                                 graph_data[2], 
                                 self.comp_year))
+        
         if sub_goal[5] == "True":
             set_graph: bool = True
         else:
             set_graph: bool = False
+            
+        if targets[0] == 0:
+            num_color = "#000000"
+        elif current_sum / targets[0] > 1.2:
+            num_color = "#0000FF"
+        elif current_sum / targets[0] > .8:
+            num_color = "#009900"
+        elif current_sum / targets[0] > .6:
+            num_color = "#FF9900"
+        else:
+            num_color = "#BB0000"
+        print(set_graph)
+        sg = SubGoal(resource_uri(path.join(self.path_to_report, "outputs", "graphs", f"{sub_goal[0]}.png")), sub_goal[0], targets[1], current_sum, num_color, sub_goal[2], sub_goal[4], set_graph)
         self.sub_goal.populate_sub_goal_data(sub_goal[0], current_sum, targets[0], f"{sub_goal[2]} goal: {targets[1]}", f"{sub_goal[4]} Committee", set_graph)
-   
-   
+
+        index = len(self.sub_goal_objects[self.current_goal][1])
+        if sg in self.sub_goal_objects[self.current_goal][1]:
+            index = self.sub_goal_objects[self.current_goal][1].index(sg)
+            self.sub_goal_objects[self.current_goal][1].pop(index)
+        self.sub_goal_objects[self.current_goal][1].insert(index, sg)
+        self.sub_goal.show()
 
 class NewReportPage(Page):
     def __init__(self, master: App, create_report: Callable):
@@ -1032,10 +1186,10 @@ class App(ctk.CTk):
         year_path = self.body_pages["year"].year_path
         year = self.body_pages["year"].year_label.cget("text").split("-")
         self.body_pages["report_validation"].create_report(
-            read_csv(path.join(year_path, "configs"), "goals.csv"), 
-            read_csv(path.join(year_path, "configs"), "sub_goals.csv"), 
             report_path, 
+            report, 
             year_path,
+            year, 
             months[m[0]],
             int(year[-1]),
             self.body_pages["year"].comp_year,

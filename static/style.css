@@ -1,0 +1,38 @@
+@page {
+  size:landscape;
+}
+
+.goal {
+  /* color: #e6e6e6; */
+  background-color: #3d3d3d;
+}
+
+.pdf-columns section {
+  columns: 5;
+}
+.pages {
+  break-after: always;
+}
+
+.gradient-container {
+  position: relative;
+  /* margin-left: 2em; */
+  /* margin-right: 2em; */
+  /* padding: 2em; */
+  width: auto;   /* or use 100%, or auto, or match image size */
+  height: auto;   /* optional, depends on image */
+}
+
+.gradient-image {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.indicator-image {
+  position: absolute;
+  top: 50%;      /* vertical position: 50% down from top */
+  /* left: 1 * 20%;     /* horizontal position: 80% from left */
+  transform: translate(-50%, -50%); /* center the image on the point */
+  
+}

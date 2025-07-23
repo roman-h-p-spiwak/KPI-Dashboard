@@ -19,10 +19,10 @@ DATA = [['data_file_name', '(date,data_column_one,data_column_two,...)'],
                 ['lunch_sponsors', '(date,sponsor,session,pledged_paid,revenue,notes)'],
                 ['event_sponsors', '(date,sponsor,event,revenue,notes)']]
 
-GOALS = [['goal', 'percentage', '(sub_goal_zero,sub_goal_one,sub_goal_two,...)'],
-         ['Value Proposition & Visibility', '.5', '(Marketing Messages,Community Events,EXP {year} Nominations,EXP {year} Applications,EXP {year} Enrollment,Leap {year} Nominations,Leap {year} Applications,Leap {year} Enrollment)'], 
-         ['Community Engagement', '.5', "(LSM Lectures,Lecture Attendance,Calvert Attendance,Charles Attendance,St. Mary's Attendance,Satisfied-Very Satisfied,Interest Surveys)"], 
-         ['Revenue', '.5', '(Fundraising Event Revenue,LSMAA Membership,LSMAA Revenue,Program Sponsors,LSM Lunch Sponsors,LSM Event Sponsors,Sponsorship Revenue)']]
+GOALS = [['goal', 'percentage', '(sub_goal_zero,sub_goal_one,sub_goal_two,...)', '(extra_information_zero,extra_information_one,extra_information_two,...)'],
+         ['Value Proposition & Visibility', '50', '(Marketing Messages,Community Events,EXP {year} Nominations,EXP {year} Applications,EXP {year} Enrollment,Leap {year} Nominations,Leap {year} Applications,Leap {year} Enrollment)', '()'], 
+         ['Community Engagement', '50', "(LSM Lectures,Lecture Attendance,Calvert Attendance,Charles Attendance,St. Mary's Attendance,Satisfied-Very Satisfied,Interest Surveys)", '()'], 
+         ['Revenue', '50', '(Fundraising Event Revenue,LSMAA Membership,LSMAA Revenue,Program Sponsors,LSM Lunch Sponsors,LSM Event Sponsors,Sponsorship Revenue)', '()']]
 SUB_GOALS = [['sub_goal', 'data_file', 'time', 'summed_column', 'committee', 'show_graph'],
              ['Marketing Messages', 'marketing_messages', 'monthly', 'messages', 'communications', 'True'],
              ['Community Events', 'community_events', 'monthly', 'rows', 'communications', 'True'],

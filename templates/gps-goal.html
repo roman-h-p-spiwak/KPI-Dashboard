@@ -1,0 +1,13 @@
+<div class="cell" style="border: 1px solid black;">
+    <div class="goal has-text-white">
+        <div class="is-size-2">GOAL {{ goal_num }}</div>
+        <div class="is-size-3">{{ goal[0][0] }}</div>
+    </div>
+    <div class="block" style="margin: 2em;">
+        <div class="gradient-container">
+            <img src="static/gradient.png" class="gradient-image">
+            <img src="static/indicator.png" class="indicator-image" style="left: {{ goal[0][1] }}%">
+        </div>
+    </div>
+    
+</div>

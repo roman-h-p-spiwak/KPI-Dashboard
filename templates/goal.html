@@ -1,0 +1,12 @@
+{% extends "page.html" %}
+
+{% block content %}
+    <div class="goal is-size-3 has-text-centered has-text-white">GOAL {{ goal_num }}: {{ goal[0][0] }}</div>
+      <div class="fixed-grid has-4-cols" style="border: 1px solid black;">
+        <div class="grid is-column-gap-0 is-row-gap-0 has-text-centered has-text-black">
+        {% for sub_goal in goal[1] %}
+          {% include "sub-goal.html" %}
+        {% endfor %}
+        </div>
+      </div>
+{% endblock %}
