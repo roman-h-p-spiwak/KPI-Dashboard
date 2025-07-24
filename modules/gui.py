@@ -5,7 +5,7 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
 from PIL import Image
 from modules.inputs import write_csv, read_csv, delete_csv, helper, find_row, find_data_files, find_summed, find_targets, find_graph_data, find_or_create_data_files, find_or_create_target_files, find_column
-from modules.objects import SubGoal
+from modules.objects import SubGoal, Goal as gg #TODO: Change.
 from modules.directory_management import report_finalization, resource_uri
 from os import path
 comp_year_color = "#CC0000"
@@ -609,14 +609,15 @@ class ReportValidationPage(Page):
         self.goals = read_csv(path.join(path_to_report, "configs"), "goals.csv")
         self.sub_goals = read_csv(path.join(path_to_report, "configs"), "sub_goals.csv")
         for row in range(len(self.goals)):
+            print(self.goals[row][2])
             self.goals_sub_goals.append(helper(self.goals[row][2]))
 
         self.goal_heading.configure(text=self.goals[1][0])
         self.current_goal = 1
         self.current_sub_goal = 0
-        self.sub_goal_objects: list[tuple[list[str], list[SubGoal]]] = []
-        for goal in self.goals:
-            self.sub_goal_objects.append((goal, []))
+        # self.sub_goal_objects: list[tuple[list[Any], list[SubGoal]]] = []
+        # for goal in self.goals:
+            # self.sub_goal_objects.append((goal, []))
         
         self.report_name = report_name
         self.path_to_year = path_to_year
@@ -657,8 +658,11 @@ class ReportValidationPage(Page):
     
     def generate_pdf(self):
         
-        report_finalization(self.path_to_report, self.report_name, self.year, self.sub_goal_objects[1:])
-        pass
+        goal_obj: list[gg] = []
+        for goal in self.goals[1:]:
+            goal_obj.append(gg(goal, self.path_to_report, self.month)) # This is less efficient but neater.
+        
+        report_finalization(self.path_to_report, self.report_name, self.year, goal_obj)
     
     def generate_sub_goal(self): #! This is inefficient. Why regenerate the sub_goal if it hasn't changed? If we're just switching panels, it doesn't matter.
         row = find_row(self.sub_goals, self.goals_sub_goals[self.current_goal][self.current_sub_goal])
@@ -697,25 +701,32 @@ class ReportValidationPage(Page):
         else:
             set_graph: bool = False
             
-        if targets[0] == 0:
-            num_color = "#000000"
-        elif current_sum / targets[0] > 1.2:
-            num_color = "#0000FF"
-        elif current_sum / targets[0] > .8:
-            num_color = "#009900"
-        elif current_sum / targets[0] > .6:
-            num_color = "#FF9900"
+        if targets[0] != 0:
+            ratio = current_sum / targets[0]
+            if ratio > 1.2:
+                num_color = "#0000FF"
+            elif ratio > .8:
+                num_color = "#009900"
+            elif ratio > .6:
+                num_color = "#FF9900"
+            else:
+                num_color = "#BB0000"
+            
+            self.goals[self.current_goal][1] = float(self.goals[self.current_goal][1]) * (ratio + 0.2)
+            # self.sub_goal_objects[self.current_goal][0][1] = self.sub_goal_objects[self.current_goal][0][1] * (ratio + 0.2)
+            # if self.sub_goal_objects[self.current_goal][0][1] > 100:
+                # self.sub_goal_objects[self.current_goal][0][1] = 100
         else:
-            num_color = "#BB0000"
+            num_color = "#000000"
         print(set_graph)
-        sg = SubGoal(resource_uri(path.join(self.path_to_report, "outputs", "graphs", f"{sub_goal[0]}.png")), sub_goal[0], targets[1], current_sum, num_color, sub_goal[2], sub_goal[4], set_graph)
+        # sg = SubGoal(resource_uri(path.join(self.path_to_report, "outputs", "graphs", f"{sub_goal[0]}.png")), sub_goal[0], targets[1], current_sum, num_color, sub_goal[2], sub_goal[4], set_graph)
         self.sub_goal.populate_sub_goal_data(sub_goal[0], current_sum, targets[0], f"{sub_goal[2]} goal: {targets[1]}", f"{sub_goal[4]} Committee", set_graph)
 
-        index = len(self.sub_goal_objects[self.current_goal][1])
-        if sg in self.sub_goal_objects[self.current_goal][1]:
-            index = self.sub_goal_objects[self.current_goal][1].index(sg)
-            self.sub_goal_objects[self.current_goal][1].pop(index)
-        self.sub_goal_objects[self.current_goal][1].insert(index, sg)
+        # index = len(self.sub_goal_objects[self.current_goal][1])
+        # if sg in self.sub_goal_objects[self.current_goal][1]:
+            # index = self.sub_goal_objects[self.current_goal][1].index(sg)
+            # self.sub_goal_objects[self.current_goal][1].pop(index)
+        # self.sub_goal_objects[self.current_goal][1].insert(index, sg)
         self.sub_goal.show()
 
 class NewReportPage(Page):

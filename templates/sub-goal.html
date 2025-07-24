@@ -2,13 +2,19 @@
     
     <div>{{ sub_goal.sub_goal }}</div>
 
-    <div class="is-size-2 has-text-weight-extrabold" style="color: {{ sub_goal.num_color }};">{{ sub_goal.num }}</div>
+    <div class="is-size-2 has-text-weight-extrabold" style="color: {{ sub_goal.color }};">{{ sub_goal.current_sum }}</div>
+
     <div>
         {% if sub_goal.show_graph %}
-            <img src="{{ sub_goal.path_to_graph }}" style="max-width: 75%; height: auto;">
+            <img src="{{ sub_goal.path_to_graph }}" class="graph-image">
+        {% else %}
+            <img src="static/blank_background.png" class="graph-image">
         {% endif %}
     </div>
-    <div class="is-size-6">{{ sub_goal.time }} Goal: {{ sub_goal.target_num }}</div>
+
+    <div class="is-size-6">{{ sub_goal.time }} Goal: {{ sub_goal.target }}</div>
+
     <div class="is-size-7">{{ sub_goal.committee }} Committee</div>
 
 </div>
+

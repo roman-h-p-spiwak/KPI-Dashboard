@@ -1,5 +1,16 @@
 <article class="pages">
-    <div class="is-size-4 has-text-black">FY '{{year[2:]}} Strategic Plan Key Performance Indicator (KPI) Dashboard {{month}} {{year}}</div>
+    <div class="columns is-mobile">
+        <div class="column is-four-fifths">
+            <div class="is-size-4 has-text-black">
+                FY '{{year[2:]}} Strategic Plan Key Performance Indicator (KPI) Dashboard {{month}} {{year}}
+            </div>
+        </div>
+        <div class="column">
+            <figure class="image is-128x128">
+                <img src="static/LSM.png">
+            </figure>
+        </div>
+    </div>
 
     {% block content %} {% endblock %}
 </article>

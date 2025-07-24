@@ -11,7 +11,7 @@ def check_csv(path_to_file: str, name_of_file: str) -> bool:
         return False
     return True
 
-def helper(data_cell: str) -> list[str]:
+def helper(data_cell: str) -> list[str]: #TODO: If a line has a comma in it, it should be wrapped in quotation marks.
     data = data_cell.split(",")
     if len(data) > 1:
         data[0] = data[0][1:]
@@ -217,7 +217,7 @@ def find_or_create_data_files(path_to_file: str, name_of_file: str, directory: s
     files: list[tuple[str, str]] = []
     data_file: list[list[str]] = read_csv(path_to_file, name_of_file)
     for row in data_file[1:]:
-        if not check_csv(path_to_file, name_of_file):
+        if not check_csv(path_to_file, name_of_file): #? Checking the file that we've already read-in? This probably is supposed to be `check_csv(directory, f"{row[0]}.csv")`.
             create_csv(directory, f"{row[0]}.csv", [helper(row[1])])
         files.append((directory, f"{row[0]}.csv"))
     return files
@@ -226,7 +226,7 @@ def find_or_create_target_files(path_to_file: str, name_of_file: str, directory:
     files: list[tuple[str, str]] = []
     data_file: list[list[str]] = read_csv(path_to_file, name_of_file)
     for row in data_file[1:]:
-        if not check_csv(path_to_file, name_of_file):
+        if not check_csv(path_to_file, name_of_file): #? Checking the file that we've already read-in? This probably is supposed to be `check_csv(directory, f"{row[0]}.csv")`.
             create_csv(directory, f"{row[0]}_targets.csv", [["date", row[1]]])
         files.append((directory, f"{row[0]}_targets.csv"))
     return files

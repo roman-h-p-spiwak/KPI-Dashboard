@@ -5,26 +5,32 @@ from re import findall
 from shutil import copy, copytree
 from modules.inputs import helper, read_csv, create_csv, modify_cell, find_row
 import modules.defaults as defaults
-from modules.objects import SubGoal
 from typing import Any
 from pathlib import Path
 from weasyprint import HTML, CSS
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from subprocess import call
 from platform import system
+from modules.objects import Goal
 
-def report_finalization(path_to_report: str, report_name: str,  year: str, goals_sub_goals: list[tuple[list[str], list[SubGoal]]]) -> bool:
+# goals_sub_goals: list[tuple[list[Any], list[SubGoal]]]
+def report_finalization(path_to_report: str, report_name: str,  year: str, goals: list[Goal]) -> bool:
     env = Environment(
         loader=FileSystemLoader("templates"),
         autoescape=select_autoescape()
     )
     template = env.get_template("index.html")
+
+    for goal in goals:
+        for sub_goal in goal.sub_goals:
+            sub_goal.path_to_graph = resource_uri(sub_goal.path_to_graph)
+    
     path_to_file = resource_path(path.join(path_to_report, "outputs", "reports"))
     file_path = resource_path(path.join(path_to_file, f"{report_name}.pdf"))
     HTML(string=template.render(
     year=year[1], 
     month=report_name.split(" ")[0], 
-    goals=goals_sub_goals),
+    goals=goals),
      base_url=Path(".").resolve()).write_pdf(
     file_path,
     stylesheets=[
@@ -163,6 +169,8 @@ def year_create(directory: str, year: str, comp_year = "") -> bool:
     if not create_csv(year_configs_folder, "configs.csv", defaults.YEAR_CONFIGS):
         return False
     
+    
+    
     for row in read_csv(year_configs_folder, "data.csv")[1:]:
         data = helper(row[1])
         create_csv(year_data_folder, f"{row[0]}.csv", [data])
@@ -178,6 +186,9 @@ def year_create(directory: str, year: str, comp_year = "") -> bool:
     
     print(f"\033[0;32m Success: The directory for the year `{year}` was created without error.\033[0m")
     return True
+
+def year_next_year_insert(path_to_file: str, name_of_file: str, year: int):
+    pass
 
 def copy_or_create(source_path: str, source_name: str, destination_path: str, destination_name: str, data: list) -> bool:
     try:
