@@ -6,9 +6,7 @@ from typing import Any
 #TODO: Make sure all the success and error statements don't have leading whitespace.
 
 def check_csv(path_to_file: str, name_of_file: str) -> bool:
-    import traceback
     if not path.isfile(path.join(path_to_file, name_of_file)):
-        traceback.print_stack()
         print(f"\033[0;31mError: No such file `{name_of_file}` exists at `{path_to_file}`.\033[0m")
         return False
     return True
@@ -131,6 +129,7 @@ def find_graph_data(time: str,
     data.append(find_graph_data_helper(time, summed, year_data_files, month))
     # data.append([float(row[1]) for row in target_file[1:]])
     data.append(find_graph_data_helper(time, [target_file[0][1]], [target_file], 6))
+    
     data.append(find_graph_data_helper(time, summed, comp_year_files, month))
     return data
 
@@ -145,19 +144,19 @@ def find_graph_data_helper(time: str, summed: list[str], data_files: list[list[l
     for data in data_files:
         columns = []
         for column in summed:
-            # print(data)
+            if column == "rows": 
+                columns.append(column)
+                continue
             c = find_column(data[0], column)
             if c != -1:
                 columns.append(c)
-            elif column == "rows": 
-                columns.append(column)
         ending_row = 1
         for m in range(month_index + 1):
             starting_row = ending_row
             while ending_row < len(data) and int(data[ending_row][0].split("/")[0]) == year[m]:
                 for c in columns:
                     if c == "rows":
-                        output[m] += (ending_row + 1) - starting_row
+                        output[m] += 1
                         continue
                     output[m] += float(data[ending_row][c])
                 ending_row += 1    
@@ -199,12 +198,13 @@ def find_summed(time: str, summed_column_cell: str, data_files: list[list[list[s
         summed = helper(summed_column_cell)
         # print(data)
         for column in summed:
+            if column == "rows":
+                sum += len(data)
+                continue
             c = find_column(header, column)
             if c != -1:
                 for row in data:
                     sum += int(row[c])
-            elif column == "rows":
-                    sum += len(data)
     return float(sum)
 
 def find_starting_row(data: list[list[str]], month: int) -> tuple[int, int]:
