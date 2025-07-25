@@ -4,7 +4,7 @@ from modules.gui import App
 
 
 CONFIGS = get_app_configs(resource_path(), "configs.csv")
-print(resource_path(CONFIGS[find_row(CONFIGS, "home_directory")][1]))
+# print(resource_path(CONFIGS[find_row(CONFIGS, "home_directory")][1]))
 HOME_DIRECTORY = resource_path(CONFIGS[find_row(CONFIGS, "home_directory")][1])
 
 def create_years(year: str, comp_year: str):

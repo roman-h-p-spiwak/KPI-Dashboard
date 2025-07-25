@@ -6,7 +6,9 @@ from typing import Any
 #TODO: Make sure all the success and error statements don't have leading whitespace.
 
 def check_csv(path_to_file: str, name_of_file: str) -> bool:
+    import traceback
     if not path.isfile(path.join(path_to_file, name_of_file)):
+        traceback.print_stack()
         print(f"\033[0;31mError: No such file `{name_of_file}` exists at `{path_to_file}`.\033[0m")
         return False
     return True
@@ -16,6 +18,8 @@ def helper(data_cell: str) -> list[str]: #TODO: If a line has a comma in it, it 
     if len(data) > 1:
         data[0] = data[0][1:]
         data[-1] = data[-1][:-1]
+    if data == ["()"]:
+        return []
     return data
 
 def read_csv(path_to_file: str, name_of_file: str) -> list:
@@ -141,6 +145,7 @@ def find_graph_data_helper(time: str, summed: list[str], data_files: list[list[l
     for data in data_files:
         columns = []
         for column in summed:
+            # print(data)
             c = find_column(data[0], column)
             if c != -1:
                 columns.append(c)
@@ -173,11 +178,11 @@ def find_targets(time: str, targets: list[list[str]], month: int) -> tuple[float
         displayed_valued = float(targets[-1][1])
     return (compared_value, displayed_valued)
 
-def find_data_files(data_files_cell: str, path_to_data: str) -> list[list[list[str]]]:
+def find_data_files(data_files_cell: str, path_to_data: str, affix: str = "") -> list[list[list[str]]]:
     data_files = helper(data_files_cell)
     data = []
     for file in data_files:
-        data.append(read_csv(path_to_data, f"{file}.csv"))
+        data.append(read_csv(path_to_data, f"{file}{affix}.csv"))
     return data
 
 def find_summed(time: str, summed_column_cell: str, data_files: list[list[list[str]]], month: int) -> float:
@@ -192,6 +197,7 @@ def find_summed(time: str, summed_column_cell: str, data_files: list[list[list[s
         header = data[0]
         data = data[start_at:end_at]
         summed = helper(summed_column_cell)
+        # print(data)
         for column in summed:
             c = find_column(header, column)
             if c != -1:

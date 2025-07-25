@@ -26,7 +26,7 @@ class SubGoal:
         return True
     
 class SubGoals:
-    def __init__(self, sub_goal_content: list[str], path_to_report: str, month: int):
+    def __init__(self, sub_goal_content: list[str], path_to_report: str, month: int, affix: str):
         
         self.sub_goal: str = sub_goal_content[0]
         self.time: str = sub_goal_content[2]
@@ -48,7 +48,7 @@ class SubGoals:
                 self.color = "#BB0000"
         self.path_to_graph: str = ""
         if self.show_graph:
-            self.path_to_graph = path.join(path_to_report, "outputs", "graphs", f"{self.sub_goal}.png") #TODO: Graphs should be named `{sub_goal}_graph.png` to stay in line with target naming conventions.
+            self.path_to_graph = path.join(path_to_report, "outputs", "graphs", f"{self.sub_goal}{affix}.png") #TODO: Graphs should be named `{sub_goal}_graph.png` to stay in line with target naming conventions.
         
     def __eq__(self, value: object) -> bool:
         if type(value) is not SubGoals or value.sub_goal != self.sub_goal:
@@ -66,7 +66,7 @@ class SubGoals:
         return find_targets(self.time, target_file, month)
     
 class Goal:
-    def __init__(self, goal_content: list[str], path_to_report: str, month: int):
+    def __init__(self, goal_content: list[str], path_to_report: str, month: int, affix: str):
         
         self.goal: str = goal_content[0]
         try:
@@ -77,10 +77,10 @@ class Goal:
         except Exception as e:
             print(f"\033[0;31mError: The goal `{self.goal}` has an improper percentage `{goal_content[1]}` resulting in {e}. Setting value to 50.\033[0m")
             self.percentage: float = 50.0
-        self.sub_goals: list[SubGoals] = self.generate_sub_goals(helper(goal_content[2]), path_to_report, month)
+        self.sub_goals: list[SubGoals] = self.generate_sub_goals(helper(goal_content[2]), path_to_report, month, affix)
         self.extra_text: list[str] = self.find_extra_text(path_to_report)
     
-    def generate_sub_goals(self, sub_goals_names: list[str], path_to_report: str, month: int) -> list[SubGoals]:
+    def generate_sub_goals(self, sub_goals_names: list[str], path_to_report: str, month: int, affix: str) -> list[SubGoals]:
 
         sub_goals: list[SubGoals] = []
         
@@ -89,7 +89,7 @@ class Goal:
         
         for sub_goal in sub_goals_names:
             row: int = find_row(data, sub_goal)
-            sub_goals.append(SubGoals(data[row], path_to_report, month))
+            sub_goals.append(SubGoals(data[row], path_to_report, month, affix))
 
         return sub_goals
     

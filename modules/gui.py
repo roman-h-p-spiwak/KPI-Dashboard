@@ -6,7 +6,7 @@ from matplotlib.figure import Figure
 from PIL import Image
 from modules.inputs import write_csv, read_csv, delete_csv, helper, find_row, find_data_files, find_summed, find_targets, find_graph_data, find_or_create_data_files, find_or_create_target_files, find_column
 from modules.objects import SubGoal, Goal as gg #TODO: Change.
-from modules.directory_management import report_finalization, resource_uri
+from modules.directory_management import report_generation, report_finalization, new_report_version
 from os import path
 comp_year_color = "#CC0000"
 target_color = "#008800"
@@ -18,7 +18,8 @@ def create_graph(sub_goal: str,
                  target_data: list[float], 
                  path_to_report: str, 
                  comp_year_data: list[float] = [], 
-                 comp_year: int = 0) -> str:
+                 comp_year: int = 0,
+                 affix: str = "") -> str:
     year = ["Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun"]
     
     fig = Figure()
@@ -33,8 +34,8 @@ def create_graph(sub_goal: str,
     ax.plot(year[:len(year_data)], year_data, marker="o", label=f"{current_year} Actual", color=year_color)
     ax.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc='lower left', ncols=ncols, mode="expand", borderaxespad=0.)
     canvas.draw()
-    fig.savefig(f"{path_to_report}/outputs/graphs/{sub_goal}.png")
-    return f"{path_to_report}/outputs/graphs/{sub_goal}.png"
+    fig.savefig(f"{path_to_report}/outputs/graphs/{sub_goal}{affix}.png")
+    return f"{path_to_report}/outputs/graphs/{sub_goal}{affix}.png"
 
 
 class Page(ctk.CTkFrame):
@@ -456,7 +457,7 @@ class ScrollableGoalFrame(ctk.CTkScrollableFrame):
         g.goal_number.configure(text=f"GOAL {len(self.goals) + 1}")
         g.goal_name.configure(text=goal[0])
         g.goal_percent.insert("0.0", goal[1])
-        g.goal_extra_data.insert("0.0", goal[3])
+        # g.goal_extra_data.insert("0.0", goal[3])
         
         self.goals.append(g)
     
@@ -542,6 +543,9 @@ class ReportValidationPage(Page):
         self.current_sub_goal = -1
         self.current_sub_goal_data = []
         
+        self.access_directory = ""
+        self.affix = ""
+        
         self.path_to_year = ""
         self.path_to_report = ""
         self.report_name = ""
@@ -560,7 +564,7 @@ class ReportValidationPage(Page):
             self.goals[i][1] = data[i - 1][0]
             self.goals[i][3] = data[i - 1][1]
         
-        write_csv(path.join(self.path_to_report, "configs"), "goals.csv", self.goals)
+        write_csv(path.join(self.access_directory, "configs"), "goals.csv", self.goals)
     
     def save_csv(self):
         
@@ -572,7 +576,7 @@ class ReportValidationPage(Page):
             return
         sub_goal: list[str] = self.sub_goals[row]
         self.current_sub_goal_data = []
-        write_csv(path.join(self.path_to_report, "inputs", "data"), f"{sub_goal[1]}.csv", data)
+        write_csv(path.join(self.access_directory, "inputs", "data"), f"{sub_goal[1]}{self.affix}.csv", data)
         
     
     def has_changed(self):
@@ -583,8 +587,8 @@ class ReportValidationPage(Page):
         if row == -1:
             return
         sub_goal: list[str] = self.sub_goals[row]
-        self.current_sub_goal_data = read_csv(path.join(self.path_to_report, "inputs", "data"), f"{sub_goal[1]}.csv")
-        self.sub_goal_data.populate_CSV_frame(f"{sub_goal[1]}.csv", self.current_sub_goal_data)
+        self.current_sub_goal_data = read_csv(path.join(self.access_directory, "inputs", "data"), f"{sub_goal[1]}{self.affix}.csv")
+        self.sub_goal_data.populate_CSV_frame(f"{sub_goal[1]}{self.affix}.csv", self.current_sub_goal_data)
         self.data_active = True
         self.sub_goal_data.show()
     
@@ -598,18 +602,31 @@ class ReportValidationPage(Page):
         
     def create_report(self, 
                       path_to_report: str,
-                      report_name: str, 
-                      path_to_year: str,
+                      version: str,
+                      path_to_year: str, 
                       year: str,  
                       month: int, 
                       current_year: int = 0, 
                       comp_year: int = 0, 
                       path_to_comp_year: str = ""):
         
-        self.goals = read_csv(path.join(path_to_report, "configs"), "goals.csv")
-        self.sub_goals = read_csv(path.join(path_to_report, "configs"), "sub_goals.csv")
+        
+        configs_path = path.join(path_to_report, "configs")
+        configs = read_csv(configs_path, "configs.csv")
+        
+        self.access_directory = configs[find_row(configs, "access_directory")][1]
+        self.affix = ""
+        if version != "1":
+            self.affix = f"_{version}"
+        
+        
+        
+        
+        self.goals = read_csv(path.join(self.access_directory, "configs"), "goals.csv")
+        self.sub_goals = read_csv(path.join(self.access_directory, "configs"), "sub_goals.csv")
+        self.goals_sub_goals = []
         for row in range(len(self.goals)):
-            print(self.goals[row][2])
+            # print(self.goals[row][2])
             self.goals_sub_goals.append(helper(self.goals[row][2]))
 
         self.goal_heading.configure(text=self.goals[1][0])
@@ -619,7 +636,7 @@ class ReportValidationPage(Page):
         # for goal in self.goals:
             # self.sub_goal_objects.append((goal, []))
         
-        self.report_name = report_name
+        self.report_name = f"{configs[find_row(configs, 'month')][1]} Report"
         self.path_to_year = path_to_year
         self.year = year
         self.path_to_report = path_to_report
@@ -658,28 +675,33 @@ class ReportValidationPage(Page):
     
     def generate_pdf(self):
         
+        report_finalization(self.path_to_report)
+        
         goal_obj: list[gg] = []
         for goal in self.goals[1:]:
-            goal_obj.append(gg(goal, self.path_to_report, self.month)) # This is less efficient but neater.
+            goal_obj.append(gg(goal, self.path_to_report, self.month, self.affix)) # This is less efficient but neater.
         
-        report_finalization(self.path_to_report, self.report_name, self.year, goal_obj)
+        report_generation(self.path_to_report, self.report_name, self.year, goal_obj, self.affix)
     
     def generate_sub_goal(self): #! This is inefficient. Why regenerate the sub_goal if it hasn't changed? If we're just switching panels, it doesn't matter.
         row = find_row(self.sub_goals, self.goals_sub_goals[self.current_goal][self.current_sub_goal])
         if row == -1:
             return
         sub_goal: list[str] = self.sub_goals[row]
-        data_files = find_data_files(sub_goal[1], path.join(self.path_to_report, "inputs", "data"))
+        data_files = find_data_files(sub_goal[1], path.join(self.access_directory, "inputs", "data"), self.affix)
+        # print(data_files)
         current_sum: float = find_summed(sub_goal[2], sub_goal[3], data_files, self.month)
 
         comp_data_files = []
         # print(self.path_to_comp_year)
         if self.path_to_comp_year:
-            comp_data_files = find_data_files(sub_goal[1], path.join(self.path_to_year, "inputs", "data"))
+            comp_data_files = find_data_files(sub_goal[1], path.join(self.path_to_comp_year, "inputs", "data"))
             # print(comp_data_files)
             # comp_current_sum: float = find_summed(sub_goal[2], sub_goal[3], comp_data_files, month)
-        target_file = read_csv(path.join(self.path_to_year, "inputs", "targets"), f"{sub_goal[0]}_targets.csv")
+        target_file = read_csv(path.join(self.access_directory, "inputs", "targets"), f"{sub_goal[0]}_targets.csv")
         targets: tuple[float, float] = find_targets(sub_goal[2], target_file, self.month)
+        
+        # print(data_files)
         
         graph_data = find_graph_data(sub_goal[2], 
                                      sub_goal[3], 
@@ -694,7 +716,8 @@ class ReportValidationPage(Page):
                                 graph_data[1], 
                                 self.path_to_report, 
                                 graph_data[2], 
-                                self.comp_year))
+                                self.comp_year,
+                                self.affix))
         
         if sub_goal[5] == "True":
             set_graph: bool = True
@@ -718,7 +741,7 @@ class ReportValidationPage(Page):
                 # self.sub_goal_objects[self.current_goal][0][1] = 100
         else:
             num_color = "#000000"
-        print(set_graph)
+        # print(set_graph)
         # sg = SubGoal(resource_uri(path.join(self.path_to_report, "outputs", "graphs", f"{sub_goal[0]}.png")), sub_goal[0], targets[1], current_sum, num_color, sub_goal[2], sub_goal[4], set_graph)
         self.sub_goal.populate_sub_goal_data(sub_goal[0], current_sum, targets[0], f"{sub_goal[2]} goal: {targets[1]}", f"{sub_goal[4]} Committee", set_graph)
 
@@ -728,6 +751,35 @@ class ReportValidationPage(Page):
             # self.sub_goal_objects[self.current_goal][1].pop(index)
         # self.sub_goal_objects[self.current_goal][1].insert(index, sg)
         self.sub_goal.show()
+
+class ReportSelection(Page):
+    def __init__(self, master: App, open_report_version: Callable):
+        super().__init__(master)
+
+        self.grid_rowconfigure(0, weight=0)
+        self.grid_rowconfigure(1, weight=1)
+        self.grid_rowconfigure(2, weight=0)
+        self.grid_columnconfigure(0, weight=1)
+        
+        self.report_name = ctk.CTkLabel(self, text="s")
+        self.grid(row=0, column=0, sticky="new")
+        
+        self.report_versions = ctk.CTkOptionMenu(self, values=[])
+        self.report_versions.grid(row=1, column=0, sticky="ew")
+        
+        self.path_to_report = ""
+        self.month = ""
+        
+        self.proceed = ctk.CTkButton(self, text="Proceed", command=lambda: open_report_version(self.path_to_report, self.report_versions.get(), self.month))
+        self.proceed.grid(row=2, column=0, sticky="sew")
+    
+    def report_selection(self, path_to_report: str, versions: list[str], month: str):
+        self.report_name.configure(text="month")
+        self.path_to_report = path_to_report
+        self.month = month
+        versions.append("Create New")
+        self.report_versions.configure(values=versions)
+        self.report_versions.set(versions[0])
 
 class NewReportPage(Page):
     def __init__(self, master: App, create_report: Callable):
@@ -1111,6 +1163,8 @@ class App(ctk.CTk):
 
         self.body_pages["new_report"] = NewReportPage(self, self.create_report)
         
+        self.body_pages["version_select"] = ReportSelection(self, self.open_report_helper)
+        
         self.body_pages["report_validation"] = ReportValidationPage(self)
         
         for key in self.body_pages:
@@ -1152,13 +1206,13 @@ class App(ctk.CTk):
         self.body_pages["year"].report_scroll_frame.delete_buttons()
         self.body_pages["year"].year_label.configure(text=year)
         self.body_pages["year"].year_path = year_path
-        print(year_path, self.i)
+        # print(year_path, self.i)
         self.i += 1
-        print(path.join(year_path, "configs"), self.i)
+        # print(path.join(year_path, "configs"), self.i)
         self.i += 1
         
         year_configs = read_csv(path.join(year_path, "configs"), "configs.csv")
-        print(year_configs, self.i)
+        # print(year_configs, self.i)
         self.i += 1
         comp_year = year_configs[find_row(year_configs, "comp_year")][1]
         comp_year_path = ""
@@ -1177,7 +1231,31 @@ class App(ctk.CTk):
         self.body_pages["new_report"].initialize(year, path_to_year, month)
         self.open_page("new_report")
         
+    def open_report_version_select(self, report_path, versions, month):
+        self.body_pages["version_select"].report_selection(report_path, versions, month)
+        self.open_page("version_select")
+        
+        
     def open_report(self, report_path, report):
+        
+        # print(report_path)
+        configs_path = path.join(report_path, "configs")
+        configs = read_csv(configs_path, "configs.csv")
+        
+        versions: list[str] = helper(configs[find_row(configs, "versions")][1])
+        # print(versions)
+        month: str = configs[find_row(configs, "month")][1]
+        if not versions:
+            self.open_report_helper(report_path, "1", month)
+            return
+        self.open_report_version_select(report_path, versions, month)
+        
+        
+
+    def open_report_helper(self, report_path, version, month):
+        
+        if version == "Create New":
+            version = new_report_version(report_path)
         
         months = {"Jul": 7, 
             "Aug": 8, 
@@ -1191,17 +1269,17 @@ class App(ctk.CTk):
             "Apr": 4, 
             "May": 5, 
             "Jun": 6}
-        m = report.split(" ")
+        
 
         
         year_path = self.body_pages["year"].year_path
         year = self.body_pages["year"].year_label.cget("text").split("-")
         self.body_pages["report_validation"].create_report(
-            report_path, 
-            report, 
+            report_path,
+            version, 
             year_path,
             year, 
-            months[m[0]],
+            months[month],
             int(year[-1]),
             self.body_pages["year"].comp_year,
             self.body_pages["year"].comp_year_path)
@@ -1221,7 +1299,7 @@ class App(ctk.CTk):
         #     for report, report_path in reports:
         #         self.body_pages["report"].report_scroll_frame.add_button(report, report_path)
         # self.open_page("report")
-
+        pass
     def back_page(self):
         match self.current_page:
             case "home":
