@@ -6,7 +6,7 @@ from matplotlib.figure import Figure
 from PIL import Image
 from modules.inputs import write_csv, read_csv, delete_csv, helper, find_row, find_data_files, find_summed, find_targets, find_graph_data, find_or_create_data_files, find_or_create_target_files, find_column
 from modules.objects import SubGoal, Goal as gg #TODO: Change.
-from modules.directory_management import report_generation, report_finalization, new_report_version
+from modules.directory_management import report_generation, report_finalization, new_report_version, has_report_pdf_generated
 from os import path
 comp_year_color = "#CC0000"
 target_color = "#008800"
@@ -34,8 +34,8 @@ def create_graph(sub_goal: str,
     ax.plot(year[:len(year_data)], year_data, marker="o", label=f"{current_year} Actual", color=year_color)
     ax.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc='lower left', ncols=ncols, mode="expand", borderaxespad=0.)
     canvas.draw()
-    fig.savefig(f"{path_to_report}/outputs/graphs/{sub_goal}{affix}.png")
-    return f"{path_to_report}/outputs/graphs/{sub_goal}{affix}.png"
+    fig.savefig(f"{path_to_report}/outputs/graphs/{sub_goal}{affix}_graph.png")
+    return f"{path_to_report}/outputs/graphs/{sub_goal}{affix}_graph.png"
 
 
 class Page(ctk.CTkFrame):
@@ -127,7 +127,7 @@ class ScrollableCSVFrame(ctk.CTkScrollableFrame):
         down_button = ctk.CTkButton(arrow_frame, text="v", width=40, command=lambda: self.move_row((row_frame, new_row), 1))
         down_button.grid(row=1, column=0, sticky="sew")
         
-        delete_button = ctk.CTkButton(row_frame, text="Delete", width=40, fg_color="red", command=lambda: self.delete_row((row_frame, new_row)))
+        delete_button = ctk.CTkButton(row_frame, text="Delete", width=40, fg_color="red", command=lambda: self.delete_row((row_frame, new_row))) #TODO: There is a bug. Please fix.
         delete_button.grid(row=0, column=2, sticky="ew")
         
         self.rows.append((row_frame, new_row))
@@ -514,7 +514,7 @@ class ReportValidationPage(Page):
         # self.grid_rowconfigure(2, weight=0)
         self.grid_columnconfigure(0, weight=1)
         
-        self.goal_heading = ctk.CTkLabel(self, text="goal heading")
+        self.goal_heading = ctk.CTkLabel(self, text="Goal Heading")
         self.goal_heading.grid(row=0, column=0, sticky="ew")
         
         self.sub_goal_frame = ctk.CTkFrame(self)
@@ -542,6 +542,8 @@ class ReportValidationPage(Page):
         self.current_goal = -1
         self.current_sub_goal = -1
         self.current_sub_goal_data = []
+        
+        self.allow_edit = True
         
         self.access_directory = ""
         self.affix = ""
@@ -583,6 +585,8 @@ class ReportValidationPage(Page):
         return self.sub_goal_data.has_changed()
     
     def open_data(self, event):
+        if not self.allow_edit:
+            return
         row = find_row(self.sub_goals, self.goals_sub_goals[self.current_goal][self.current_sub_goal])
         if row == -1:
             return
@@ -614,13 +618,13 @@ class ReportValidationPage(Page):
         configs_path = path.join(path_to_report, "configs")
         configs = read_csv(configs_path, "configs.csv")
         
+        
         self.access_directory = configs[find_row(configs, "access_directory")][1]
         self.affix = ""
         if version != "1":
             self.affix = f"_{version}"
         
-        
-        
+        self.allow_edit = not has_report_pdf_generated(path_to_report, self.affix)
         
         self.goals = read_csv(path.join(self.access_directory, "configs"), "goals.csv")
         self.sub_goals = read_csv(path.join(self.access_directory, "configs"), "sub_goals.csv")
@@ -645,16 +649,16 @@ class ReportValidationPage(Page):
         self.comp_year = comp_year
         self.path_to_comp_year = path_to_comp_year
         
+    def editing(self):
+        
+        pass
+    
     def left_arrow(self):
         self.current_sub_goal -= 1
         if self.current_sub_goal < 0:
             self.current_goal -= 1
             self.current_sub_goal = len(self.goals_sub_goals[self.current_goal]) - 1
             self.goal_heading.configure(text=self.goals[self.current_goal][0])
-        if self.current_goal == 0 and self.current_sub_goal == 0:
-            self.sub_goal.left_arrow.configure(state="disabled")
-        else:
-            self.sub_goal.left_arrow.configure(state="normal")
         self.generate_sub_goal()
     
     def right_arrow(self):
@@ -691,6 +695,8 @@ class ReportValidationPage(Page):
         data_files = find_data_files(sub_goal[1], path.join(self.access_directory, "inputs", "data"), self.affix)
         # print(data_files)
         current_sum: float = find_summed(sub_goal[2], sub_goal[3], data_files, self.month)
+
+        self.editing()
 
         comp_data_files = []
         # print(self.path_to_comp_year)
@@ -743,13 +749,17 @@ class ReportValidationPage(Page):
             num_color = "#000000"
         # print(set_graph)
         # sg = SubGoal(resource_uri(path.join(self.path_to_report, "outputs", "graphs", f"{sub_goal[0]}.png")), sub_goal[0], targets[1], current_sum, num_color, sub_goal[2], sub_goal[4], set_graph)
-        self.sub_goal.populate_sub_goal_data(sub_goal[0], current_sum, targets[0], f"{sub_goal[2]} goal: {targets[1]}", f"{sub_goal[4]} Committee", set_graph)
+        self.sub_goal.populate_sub_goal_data(sub_goal[0], current_sum, targets[0], f"{sub_goal[2]} Goal: {targets[1]}", f"{sub_goal[4]} Committee", set_graph)
 
         # index = len(self.sub_goal_objects[self.current_goal][1])
         # if sg in self.sub_goal_objects[self.current_goal][1]:
             # index = self.sub_goal_objects[self.current_goal][1].index(sg)
             # self.sub_goal_objects[self.current_goal][1].pop(index)
         # self.sub_goal_objects[self.current_goal][1].insert(index, sg)
+        if self.current_sub_goal == 0 and self.current_goal == 1:
+            self.sub_goal.left_arrow.configure(state="disabled")
+        else:
+            self.sub_goal.left_arrow.configure(state="normal")
         self.sub_goal.show()
 
 class ReportSelection(Page):
@@ -1403,3 +1413,4 @@ def save_or_quit_year(csv: CSVFrame, save: Callable, quit: Callable):
         
         save_button = ctk.CTkButton(buttons_frame, text="Save and Exit", command=quit_with_saving)
         save_button.grid(row=0, column=1, sticky="e")
+        

@@ -48,7 +48,7 @@ class SubGoals:
                 self.color = "#BB0000"
         self.path_to_graph: str = ""
         if self.show_graph:
-            self.path_to_graph = path.join(path_to_report, "outputs", "graphs", f"{self.sub_goal}{affix}.png") #TODO: Graphs should be named `{sub_goal}_graph.png` to stay in line with target naming conventions.
+            self.path_to_graph = path.join(path_to_report, "outputs", "graphs", f"{self.sub_goal}{affix}_graph.png")
         
     def __eq__(self, value: object) -> bool:
         if type(value) is not SubGoals or value.sub_goal != self.sub_goal:
@@ -104,3 +104,4 @@ class Goal:
         except Exception as e:
             print(f"\033[0;31mError: {e}.\033[0m")
         return extra_text
+    

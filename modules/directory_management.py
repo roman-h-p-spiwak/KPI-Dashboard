@@ -62,7 +62,20 @@ MONTHS = {
     "December": (12, "Dec"),
 }
 
-def new_report_version(path_to_report: str) -> str: #Note: Kind of a fork-bomb.
+def get_configs(path_to_report: str) -> list[list[str]]:
+    path_to_configs = path.join(path_to_report, "configs")
+    return read_csv(path_to_configs, "configs.csv")
+
+def has_report_pdf_generated(path_to_report: str, affix: str = "") -> bool:
+    
+    configs = get_configs(path_to_report)
+    month_abr = configs[find_row(configs, "month")][1]
+    
+    path_to_pdf: str = path.join(path_to_report, "outputs", "reports")
+    print(path.join(path_to_pdf, f"{month_abr} Report{affix}.pdf"))
+    return path.exists(path.join(path_to_pdf, f"{month_abr} Report{affix}.pdf"))
+
+def new_report_version(path_to_report: str) -> str:
     
     path_to_configs = path.join(path_to_report, "configs")
     configs = read_csv(path_to_configs, "configs.csv")
@@ -203,8 +216,47 @@ def year_index(directory: str) -> list[tuple]:
     return directory_index(directory, 0)
 
 def report_index(directory: str) -> list[tuple]:
-    #TODO: This should sort each report not alphabetically, but by the month (in the fiscal year).
-    return directory_index(directory, 1)
+    
+    reports = directory_index(directory, 1)
+    if not reports:
+        return reports
+    sorted_reports = []
+    for i in range(12):
+        sorted_reports.append(())
+        
+    for report in reports:
+        match report[1]:
+            case "Jul Report":
+                sorted_reports[11] = report
+            case "Aug Report":
+                sorted_reports[10] = report
+            case "Sep Report":
+                sorted_reports[9] = report
+            case "Oct Report":
+                sorted_reports[8] = report
+            case "Nov Report":
+                sorted_reports[7] = report
+            case "Dec Report":
+                sorted_reports[6] = report
+            case "Jan Report":
+                sorted_reports[5] = report
+            case "Feb Report":
+                sorted_reports[4] = report 
+            case "Mar Report":
+                sorted_reports[3] = report
+            case "Apr Report":
+                sorted_reports[2] = report
+            case "May Report":
+                sorted_reports[1] = report
+            case "Jun Report":
+                sorted_reports[0] = report
+            case _:
+                print(f"\033[0;31mError: The report `{report}` does not exist.\033[0m")
+    output = []
+    for report in sorted_reports:
+        if report != ():
+            output.append(report)
+    return output
 
 def draft_report_index(directory: str) -> list[tuple]:
     return directory_index(directory, 2)
@@ -227,9 +279,10 @@ def directory_check(entry: DirEntry, control: int) -> bool:
         case 0:
             x = findall("[0-9]{4}-[0-9]{4}", entry.name)
         case 1:
-            x = findall(r"\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) Report(?:_(?:[2-9]|(?:[1-9]+[0-9]+)))?\b", entry.name)
+            # x = findall(r"\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) Report(?:_(?:[2-9]|(?:[1-9]+[0-9]+)))?\b", entry.name)
+            x = findall(r"\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) Report\b", entry.name) #! Obsolete.
         case 2:
-            x = findall(r"[0-9]{4}-[0-9]{4} \b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) Report(?:_(?:[2-9]|(?:[1-9]+[0-9]+)))?\b Draft(?:_(?:[2-9]|(?:[1-9]+[0-9]+)))?\b", entry.name)
+            x = findall(r"[0-9]{4}-[0-9]{4} \b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) Report(?:_(?:[2-9]|(?:[1-9]+[0-9]+)))?\b Draft(?:_(?:[2-9]|(?:[1-9]+[0-9]+)))?\b", entry.name) #! Obsolete.
         case _:
             print(f"\033[0;31mError: Passed control variable `{control}` doesn't exist.\033[0m")
             return False
@@ -310,13 +363,15 @@ def copy_or_create(source_path: str, source_name: str, destination_path: str, de
 def report_create(year_directory: str, month: str) -> bool:
     month_folder = path.join(year_directory, f"{month} Report")
     if path.isdir(month_folder):
-        num = 2
-        while num <= 99 and path.isdir(f"{month_folder}_{num}"):
-            num += 1
-        if num == 100:
-            print(f"\033[0;31mError: One-Hundred instances of `{month} Report` already exist.\033[0m")
-            return False
-        month_folder = path.join(year_directory, f"{month} Report_{num}")
+        # num = 2
+        # while num <= 99 and path.isdir(f"{month_folder}_{num}"):
+        #     num += 1
+        # if num == 100:
+        #     print(f"\033[0;31mError: One-Hundred instances of `{month} Report` already exist.\033[0m")
+        #     return False
+        # month_folder = path.join(year_directory, f"{month} Report_{num}")
+        print(f"\033[0;31mError: The report `{month} Report` already exist.\033[0m")
+        return False #TODO: The function that called this should display the error message to the user.
     
     month_configs_folder = path.join(month_folder, "configs")
     month_inputs_folder = path.join(month_folder, "inputs")
