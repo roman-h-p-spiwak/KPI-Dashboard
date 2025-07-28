@@ -5,7 +5,7 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
 from PIL import Image
 from modules.inputs import write_csv, read_csv, delete_csv, helper, find_row, find_data_files, find_summed, find_targets, find_graph_data, find_or_create_data_files, find_or_create_target_files, find_column
-from modules.objects import SubGoal, Goal as gg #TODO: Change.
+from modules.objects import SubGoal, Goal
 from modules.directory_management import report_generation, report_finalization, new_report_version, has_report_pdf_generated
 from os import path
 comp_year_color = "#CC0000"
@@ -402,7 +402,7 @@ class GoalFrame(Page):
         return self.goal_frame.out_load_data()
         
 
-class Goal(ctk.CTkFrame):
+class HelperGoalFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master)
         
@@ -441,7 +441,7 @@ class ScrollableGoalFrame(ctk.CTkScrollableFrame):
         super().__init__(master, orientation="horizontal")
         
         self.grid_rowconfigure(0, weight=1)
-        self.goals: list[Goal] = []
+        self.goals: list[HelperGoalFrame] = []
         
     def add_goals(self, goals: list[list[str]]):
         
@@ -451,7 +451,7 @@ class ScrollableGoalFrame(ctk.CTkScrollableFrame):
     
     def add_goal(self, goal: list[str]):
         
-        g = Goal(self)
+        g = HelperGoalFrame(self)
         self.grid_columnconfigure(len(self.goals), weight=1)
         g.grid(row=0, column=len(self.goals), sticky="nsew")
         
@@ -682,9 +682,9 @@ class ReportValidationPage(Page):
         
         report_finalization(self.path_to_report)
         
-        goal_obj: list[gg] = []
+        goal_obj: list[Goal] = []
         for goal in self.goals[1:]:
-            goal_obj.append(gg(goal, self.path_to_report, self.month, self.affix)) # This is less efficient but neater.
+            goal_obj.append(Goal(goal, self.path_to_report, self.month, self.affix)) # This is less efficient but neater.
         
         report_generation(self.path_to_report, self.report_name, self.year, goal_obj, self.affix)
     
