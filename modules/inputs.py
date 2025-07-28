@@ -69,6 +69,7 @@ def write_csv(path_to_file: str, name_of_file: str, data: list[list[Any]]) -> bo
 def create_csv(path_to_file: str, name_of_file: str, data: list[list[Any]]) -> bool:
     if path.isfile(path.join(path_to_file, name_of_file)):
         name_of_old_file = f"obsolete_on_{datetime.today().strftime('%Y-%m-%d')}"
+        num_str_ins = ""
         num = 2
         if path.isfile(path.join(path_to_file, f"{name_of_old_file}_{name_of_file}")):
             while num <= 99 and path.isfile(path.join(path_to_file, f"{name_of_old_file}_{num}_{name_of_file}")):
@@ -76,7 +77,8 @@ def create_csv(path_to_file: str, name_of_file: str, data: list[list[Any]]) -> b
             if num == 100:
                 print(f"\033[0;31mError: One-Hundred instances of `{name_of_old_file}_XX_{name_of_file}` already exist at `{path_to_file}`.\033[0m")
                 return False
-            name_of_old_file += f"_{num}_{name_of_file}"
+            num_str_ins = f"_{num}"
+        name_of_old_file += f"{num_str_ins}_{name_of_file}"
         rename(path.join(path_to_file, name_of_file), path.join(path_to_file, name_of_old_file))
         print(f"\033[0;32m Success: The file `{name_of_file}` was renamed to `{name_of_old_file}` at `{path_to_file}` without error.\033[0m")
     
