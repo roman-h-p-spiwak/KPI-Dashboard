@@ -45,6 +45,8 @@ def read_csv(path_to_file: str, name_of_file: str) -> list:
                     entry = ""
                     continue
                 entry += char
+            if entry != "\n":
+                data[i].append(entry[:-1])
             i += 1
     print(f"\033[0;32m Success: The file `{name_of_file}` was read without error at `{path_to_file}`.\033[0m")
     return data
