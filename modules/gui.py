@@ -214,6 +214,7 @@ class CSVFrame(Page):
         self.data_entires.destroy_rows()
         
     def populate_CSV_frame(self, name_of_file, data):
+        self.close()
         self.data = data
         self.data_source_label.configure(text=name_of_file)
         self.populate_column(data[0])
@@ -1027,6 +1028,35 @@ class ReportDraftsPage(Page):
         self.report_draft_scroll_frame = ScrollableButtonFrame(self, lambda: print()) #TODO: Change command.
         self.report_draft_scroll_frame.grid(row=0, column=0, sticky="nsew")
 
+class SettingsPage(Page):
+    def __init__(self, master, path_to_configs: str, go_back: Callable):
+        super().__init__(master)
+        
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1)
+
+        self.path_to_configs = path_to_configs
+        self.go_back = go_back
+
+        self.settings = CSVFrame(self, self.save)
+        self.settings.grid(row=0, column=0, sticky="nsew")
+    
+    def populate_settings(self, configs: list[list[str]]):
+        self.settings.populate_CSV_frame("configs.csv", configs)
+    
+    def save(self):
+        if self.settings.has_changed() and not self.settings.quit_without_saving:
+            save_or_quit_year(self.settings, self.save_csv, self.go_back)
+            return False
+        else:
+            self.settings.quit_without_saving = False
+            return True
+    
+    def save_csv(self):
+        data = self.settings.save_changes()
+        if not data:
+            return
+        write_csv(self.path_to_configs, "configs.csv", data)
 
 class Homepage(Page):
     def __init__(self, master: App, create_year: Callable, open_year: Callable):
@@ -1044,28 +1074,21 @@ class Homepage(Page):
         
 class App(ctk.CTk):
     def __init__(self, 
-                 home_directory: str, 
-                 button_height: int, 
-                 button_width: int, 
+                 get_home_directory: Callable, 
+                 path_to_configs: str, 
                  get_years, 
                  get_reports, 
                  create_years, 
-                 create_reports,
-                 comp_year_color,
-                 target_color,
-                 year_color):
+                 create_reports):
         super().__init__()
         
-        self.home_directory = home_directory
-        self.button_height = button_height
-        self.button_width = button_width
+        self.get_home_directory = get_home_directory
+        self.path_to_configs = path_to_configs
         self.get_years = get_years
         self.get_reports = get_reports
         self.create_years = create_years
         self.create_reports = create_reports
-        self.comp_year_color = comp_year_color
-        self.target_color = target_color
-        self.year_color = year_color
+        self.configure_app()
         
         self.geometry("500x500")
         self.minsize(width=500, height=500)
@@ -1079,7 +1102,7 @@ class App(ctk.CTk):
         
         
             # Header.
-        self.header = ctk.CTkFrame(self, height=button_height)
+        self.header = ctk.CTkFrame(self, height=self.button_height)
         self.header.grid(row=0, column=0, sticky="nsew")
         self.header.grid_rowconfigure(0, weight=1)
         self.header.grid_columnconfigure(0, weight=1)
@@ -1098,7 +1121,7 @@ class App(ctk.CTk):
         self.not_home_control_page.grid_rowconfigure(0, weight=1)
         self.not_home_control_page.grid_columnconfigure(0, weight=1)
             # Go Home Button.
-        self.go_home_button = ctk.CTkButton(self.not_home_control_page, text="Go Home", command=lambda: self.open_page("home"), height=button_height, width=button_width)
+        self.go_home_button = ctk.CTkButton(self.not_home_control_page, text="Go Home", command=lambda: self.open_page("home"), height=self.button_height, width=self.button_width)
         self.go_home_button.grid(row=0, column=0, sticky="e")
             # Place the Page.
         self.not_home_control_page.place(in_=self.control_buttons_frame, x=0, y=0, relwidth=1, relheight=1)
@@ -1122,11 +1145,11 @@ class App(ctk.CTk):
         self.settings_button_frame.grid_columnconfigure(1, weight=0)
         
             # Go Back Button.
-        self.go_back_button = ctk.CTkButton(self.settings_button_frame, text="Go Back", command=self.back_page, height=button_height, width=button_width)
+        self.go_back_button = ctk.CTkButton(self.settings_button_frame, text="Go Back", command=self.back_page, height=self.button_height, width=self.button_width)
         self.go_back_button.grid(row=0, column=0, sticky="w")
         
             # Settings Button.
-        self.settings_button = ctk.CTkButton(self.settings_button_frame, text="Settings", command=lambda: print("Opened Settings"), height=button_height, width=button_width) #TODO: Change command.
+        self.settings_button = ctk.CTkButton(self.settings_button_frame, text="Settings", command=self.open_settings, height=self.button_height, width=self.button_width) #TODO: Change command.
         self.settings_button.grid(row=0, column=1, sticky="w")
 
 
@@ -1142,6 +1165,9 @@ class App(ctk.CTk):
         
             # Homepage.
         self.body_pages["home"] = Homepage(self, self.open_new_year, self.open_year)
+        
+        self.body_pages["settings"] = SettingsPage(self, self.path_to_configs, self.back_page)
+        
         # self.body_pages["home"].place(in_=self.body, x=0, y=0, relwidth=1, relheight=1)
         
             #Report Draft Page.
@@ -1167,6 +1193,15 @@ class App(ctk.CTk):
         
         
         self.start_home()
+    
+    def configure_app(self):
+        self.configs = read_csv(self.path_to_configs, "configs.csv")
+        self.home_directory = self.get_home_directory(self.configs[find_row(self.configs, "home_directory")][1])
+        self.button_height = int(self.configs[find_row(self.configs, "button_height")][1])
+        self.button_width = int(self.configs[find_row(self.configs, "button_width")][1])
+        self.comp_year_color = self.configs[find_row(self.configs, "comp_year_color")][1]
+        self.target_color = self.configs[find_row(self.configs, "target_color")][1]
+        self.year_color = self.configs[find_row(self.configs, "year_color")][1]
     
     def create_year(self, year: str, comp_year: str):
         
@@ -1196,6 +1231,11 @@ class App(ctk.CTk):
         self.body_pages["edit_year"].initialize(year_path)
         self.open_page("edit_year")
 
+    def open_settings(self):
+        configs = read_csv(self.path_to_configs, "configs.csv")
+        self.body_pages["settings"].populate_settings(configs)
+        self.open_page("settings")
+    
     def open_year(self, year_path, year):
         
         self.body_pages["year"].report_scroll_frame.delete_buttons()
@@ -1304,8 +1344,9 @@ class App(ctk.CTk):
             case "report_draft":
                 self.open_page("home")
             case "settings":
-                self.body_pages["settings"].save()
-                self.open_page("home")
+                if self.body_pages["settings"].save():
+                    self.configure_app()
+                    self.start_home()
             case "new_report":
                 self.open_page("year")
             case "edit_year":
