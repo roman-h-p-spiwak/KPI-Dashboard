@@ -8,34 +8,10 @@ from modules.inputs import write_csv, read_csv, delete_csv, helper, find_row, fi
 from modules.objects import SubGoal, Goal
 from modules.directory_management import report_generation, report_finalization, new_report_version, has_report_pdf_generated
 from os import path
-comp_year_color = "#CC0000"
-target_color = "#008800"
-year_color = "#0000CC"
-def create_graph(sub_goal: str,
-                 summed_column: str, 
-                 current_year: int, 
-                 year_data: list[float], 
-                 target_data: list[float], 
-                 path_to_report: str, 
-                 comp_year_data: list[float] = [], 
-                 comp_year: int = 0,
-                 affix: str = "") -> str:
-    year = ["Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun"]
-    
-    fig = Figure()
-    canvas = FigureCanvas(fig)
-    ax = fig.add_subplot(111)
-    ax.set_ylabel(summed_column)
-    ncols = 2
-    if comp_year_data:
-        ax.plot(year[:len(comp_year_data)], comp_year_data, marker="o", label=comp_year, color=comp_year_color)
-        ncols += 1
-    ax.plot(year[:len(target_data)], target_data, marker="o", label=f"{current_year} Target", color=target_color)
-    ax.plot(year[:len(year_data)], year_data, marker="o", label=f"{current_year} Actual", color=year_color)
-    ax.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc='lower left', ncols=ncols, mode="expand", borderaxespad=0.)
-    canvas.draw()
-    fig.savefig(f"{path_to_report}/outputs/graphs/{sub_goal}{affix}_graph.png")
-    return f"{path_to_report}/outputs/graphs/{sub_goal}{affix}_graph.png"
+# comp_year_color = "#CC0000"
+# target_color = "#008800"
+# year_color = "#0000CC"
+
 
 
 class Page(ctk.CTkFrame):
@@ -506,7 +482,7 @@ class ScrollableButtonFrame(ctk.CTkScrollableFrame):
             button.destroy()
    
 class ReportValidationPage(Page):
-    def __init__(self, master):
+    def __init__(self, master, create_graph):
         super().__init__(master)
         
         
@@ -536,6 +512,8 @@ class ReportValidationPage(Page):
         # self.save_report_button.grid(row=2, column=0, sticky="sew")
         
         self.data_active = False
+        
+        self.create_graph = create_graph
         
         self.goals = []
         self.goals_sub_goals = []
@@ -715,7 +693,7 @@ class ReportValidationPage(Page):
                                      data_files, 
                                      target_file, 
                                      comp_data_files, self.month)
-        self.sub_goal.set_graph(create_graph(
+        self.sub_goal.set_graph(self.create_graph(
                                 sub_goal[0], 
                                 sub_goal[3], 
                                 self.current_year, 
@@ -1072,7 +1050,10 @@ class App(ctk.CTk):
                  get_years, 
                  get_reports, 
                  create_years, 
-                 create_reports):
+                 create_reports,
+                 comp_year_color,
+                 target_color,
+                 year_color):
         super().__init__()
         
         self.home_directory = home_directory
@@ -1082,6 +1063,9 @@ class App(ctk.CTk):
         self.get_reports = get_reports
         self.create_years = create_years
         self.create_reports = create_reports
+        self.comp_year_color = comp_year_color
+        self.target_color = target_color
+        self.year_color = year_color
         
         self.geometry("500x500")
         self.minsize(width=500, height=500)
@@ -1176,7 +1160,7 @@ class App(ctk.CTk):
         
         self.body_pages["version_select"] = ReportSelection(self, self.open_report_helper)
         
-        self.body_pages["report_validation"] = ReportValidationPage(self)
+        self.body_pages["report_validation"] = ReportValidationPage(self, self.create_graph)
         
         for key in self.body_pages:
             self.body_pages[key].place(in_=self.body, x=0, y=0, relwidth=1, relheight=1)
@@ -1348,6 +1332,34 @@ class App(ctk.CTk):
             self.on_home_control_page.show()
         else:
             self.not_home_control_page.show()
+
+    def create_graph(self,
+                 sub_goal: str,
+                 summed_column: str, 
+                 current_year: int, 
+                 year_data: list[float], 
+                 target_data: list[float], 
+                 path_to_report: str, 
+                 comp_year_data: list[float] = [], 
+                 comp_year: int = 0,
+                 affix: str = "") -> str:
+        year = ["Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun"]
+        
+        fig = Figure()
+        canvas = FigureCanvas(fig)
+        ax = fig.add_subplot(111)
+        ax.set_ylabel(summed_column)
+        ncols = 2
+        if comp_year_data:
+            ax.plot(year[:len(comp_year_data)], comp_year_data, marker="o", label=comp_year, color=self.comp_year_color)
+            ncols += 1
+        ax.plot(year[:len(target_data)], target_data, marker="o", label=f"{current_year} Target", color=self.target_color)
+        ax.plot(year[:len(year_data)], year_data, marker="o", label=f"{current_year} Actual", color=self.year_color)
+        ax.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc='lower left', ncols=ncols, mode="expand", borderaxespad=0.)
+        canvas.draw()
+        fig.savefig(f"{path_to_report}/outputs/graphs/{sub_goal}{affix}_graph.png")
+        return f"{path_to_report}/outputs/graphs/{sub_goal}{affix}_graph.png"
+    
 
 def save_or_quit(csv: ReportValidationPage, quit: Callable):
         def quit_without_saving():

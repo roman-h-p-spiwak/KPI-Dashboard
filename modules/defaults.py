@@ -2,7 +2,10 @@ def APP_CONFIGS() -> list[list[str]]:
     return [['config', 'value'], 
             ['home_directory', '.testdata'],
             ['button_width', '40'],
-            ['button_height', '40']]
+            ['button_height', '40'],
+            ['comp_year_color', '#CC0000'],
+            ['target_color', '#008800'],
+            ['year_color', '#0000CC']]
 def DATA() -> list[list[str]]:
     return [['data_file_name', '(date,data_column_one,data_column_two,...)'], 
             ['marketing_messages', '(date,source,messages)'], 

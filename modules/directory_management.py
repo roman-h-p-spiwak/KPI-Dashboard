@@ -1,7 +1,7 @@
 from os import DirEntry, makedirs, path, scandir, startfile
 import sys
 from pathlib import Path
-from re import findall
+from re import findall, IGNORECASE
 from shutil import copy, copytree
 from modules.inputs import helper, read_csv, create_csv, modify_cell, find_row
 import modules.defaults as defaults
@@ -184,8 +184,10 @@ def get_app_configs(path_to_config: str, config_name: str = "configs.csv") -> li
     return data
 
 def verify_app_configs(data: list) -> bool:
-    home_directory_row = find_row(data, "home_directory")
+    hex_code_pattern = r"^#?([a-f0-9]{6}|[a-f0-9]{3})$"
+    
     try:
+        home_directory_row = find_row(data, "home_directory")
         if home_directory_row == -1 or not path.exists(data[home_directory_row][1]):
             return False
         
@@ -197,7 +199,20 @@ def verify_app_configs(data: list) -> bool:
         if button_width_row == -1 or int(data[button_width_row][1]) <= 0:
             return False
         
+        comp_year_color = find_row(data, "comp_year_color")
+        if comp_year_color == -1 or not findall(hex_code_pattern, data[comp_year_color][1], flags=IGNORECASE):
+            return False
+        
+        target_color = find_row(data, "target_color")
+        if target_color == -1 or not findall(hex_code_pattern, data[target_color][1], flags=IGNORECASE):
+            return False
+        
+        year_color = find_row(data, "year_color")
+        if year_color == -1 or not findall(hex_code_pattern, data[year_color][1], flags=IGNORECASE):
+            return False
+        
         ... #TODO: Populate with all the possible config data and checks.
+        
     except Exception as e:
         print(f"\033[0;31mError: The data is formatted incorrectly, resulting in {e}.\033[0m")
         return False

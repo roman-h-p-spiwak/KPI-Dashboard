@@ -20,7 +20,7 @@ def helper(data_cell: str) -> list[str]: #TODO: If a line has a comma in it, it 
         return []
     return data
 
-def read_csv(path_to_file: str, name_of_file: str) -> list:
+def read_csv(path_to_file: str, name_of_file: str) -> list[list[Any]]:
     if not check_csv(path_to_file, name_of_file):
         return []
     
@@ -48,6 +48,7 @@ def read_csv(path_to_file: str, name_of_file: str) -> list:
             if entry != "\n":
                 data[i].append(entry[:-1])
             i += 1
+            
     print(f"\033[0;32m Success: The file `{name_of_file}` was read without error at `{path_to_file}`.\033[0m")
     return data
 

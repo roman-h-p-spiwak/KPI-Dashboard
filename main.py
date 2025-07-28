@@ -28,7 +28,10 @@ def main():
               year_index, 
               report_index, 
               year_create, 
-              report_create)
+              report_create,
+              CONFIGS[find_row(CONFIGS, "comp_year_color")][1],
+              CONFIGS[find_row(CONFIGS, "target_color")][1],
+              CONFIGS[find_row(CONFIGS, "year_color")][1])
     app.mainloop()
 
 
