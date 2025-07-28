@@ -127,7 +127,7 @@ class ScrollableCSVFrame(ctk.CTkScrollableFrame):
         down_button = ctk.CTkButton(arrow_frame, text="v", width=40, command=lambda: self.move_row((row_frame, new_row), 1))
         down_button.grid(row=1, column=0, sticky="sew")
         
-        delete_button = ctk.CTkButton(row_frame, text="Delete", width=40, fg_color="red", command=lambda: self.delete_row((row_frame, new_row))) #TODO: There is a bug. Please fix.
+        delete_button = ctk.CTkButton(row_frame, text="Delete", width=40, fg_color="red", command=lambda: self.delete_row((row_frame, new_row)))
         delete_button.grid(row=0, column=2, sticky="ew")
         
         self.rows.append((row_frame, new_row))
@@ -144,6 +144,7 @@ class ScrollableCSVFrame(ctk.CTkScrollableFrame):
         self.update_rows_position()
     
     def delete_row(self, row: tuple[ctk.CTkFrame, CSVRow]):
+        row[0].grid_remove()
         self.rows.remove(row)
         self.update_rows_position()
     
