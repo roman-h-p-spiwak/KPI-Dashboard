@@ -112,13 +112,19 @@ def report_finalization(path_to_report: str):
         path_to_year_targets = path.join(path_to_year, "inputs", "targets")
         path_to_report_targets = path.join(path_to_report, "inputs", "targets")
         
-        year_goal_path = path.join(path_to_year, "configs", "goals.csv")
-        report_goal_path = path.join(path_to_report, "configs", "goals.csv")
-        year_sub_goal_path = path.join(path_to_year, "configs", "sub_goals.csv")
-        report_sub_goal_path = path.join(path_to_report, "configs", "sub_goals.csv")
-        year_data_path = path.join(path_to_year, "configs", "data.csv")
-        report_data_path = path.join(path_to_report, "configs", "data.csv")
+        path_to_year_configs = path.join(path_to_year, "configs")
+        path_to_report_configs = path.join(path_to_report, "configs")
         
+        year_goal_path = path.join(path_to_year_configs, "goals.csv")
+        report_goal_path = path.join(path_to_report_configs, "goals.csv")
+        year_sub_goal_path = path.join(path_to_year_configs, "sub_goals.csv")
+        report_sub_goal_path = path.join(path_to_report_configs, "sub_goals.csv")
+        year_data_path = path.join(path_to_year_configs, "data.csv")
+        report_data_path = path.join(path_to_report_configs, "data.csv")
+        
+        goals = read_csv(path_to_year_configs, "goals.csv")
+        for goal in goals[1:]:
+            copy(path.join(path_to_year_configs, f"{goal[0]}_extras.txt"), path.join(path_to_report_configs, f"{goal[0]}_extras.txt"))
         copy(year_goal_path, report_goal_path)
         copy(year_sub_goal_path, report_sub_goal_path)
         copy(year_data_path, report_data_path)

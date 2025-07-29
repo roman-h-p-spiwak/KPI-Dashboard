@@ -4,7 +4,7 @@ from typing import Any, Callable
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
 from PIL import Image
-from modules.inputs import write_csv, read_csv, delete_csv, helper, find_row, find_data_files, find_summed, find_targets, find_graph_data, find_or_create_data_files, find_or_create_target_files, find_column
+from modules.inputs import write_csv, read_csv, delete_csv, helper, find_row, find_data_files, find_summed, find_targets, find_graph_data, find_or_create_data_files, find_or_create_target_files, find_column, create_csv
 from modules.objects import SubGoal, Goal
 from modules.directory_management import report_generation, report_finalization, new_report_version, has_report_pdf_generated
 from os import path
@@ -372,8 +372,8 @@ class GoalFrame(Page):
         self.save_button = ctk.CTkButton(self.body_frame, text="Save Data", command=save)
         self.save_button.grid(row=1, column=0, sticky="ew")
         
-    def populate_goals(self, goals: list[list[str]]):
-        self.goal_frame.add_goals(goals[1:])
+    def populate_goals(self, goals: list[list[str]], path_to_report: str):
+        self.goal_frame.add_goals(goals[1:], path_to_report)
         
     def save_data(self) -> list[tuple[str, str]]:
         return self.goal_frame.out_load_data()
@@ -410,6 +410,18 @@ class HelperGoalFrame(ctk.CTkFrame):
             print("ERROR")
             return "0.0"
     
+    def set_extra_data(self, path_to_report: str):
+        
+        extra_text: str = ""
+        path_to_goal_extras: str = path.join(path_to_report, "configs")
+        try:
+            with open(path.join(path_to_goal_extras, f"{self.goal_name.cget("text")}_extras.txt"), 'r') as file:
+                extra_text = file.read()
+        except FileNotFoundError:
+            print(f"\033[0;31mError: The file `{self.goal_name.cget("text")}_extras.txt` doesn't exist. Creating it.\033[0m")
+            create_csv(path_to_goal_extras, f"{self.goal_name.cget("text")}_extras.txt", [])
+        self.goal_extra_data.insert("0.0", extra_text)
+    
     def get_extra_data(self) -> str:
         return self.goal_extra_data.get("0.0", "end-1c").strip()
 
@@ -417,16 +429,17 @@ class ScrollableGoalFrame(ctk.CTkScrollableFrame):
     def __init__(self, master):
         super().__init__(master, orientation="horizontal")
         
+        
         self.grid_rowconfigure(0, weight=1)
         self.goals: list[HelperGoalFrame] = []
         
-    def add_goals(self, goals: list[list[str]]):
+    def add_goals(self, goals: list[list[str]], path_to_report: str):
         
         self.goals.clear()
         for goal in goals:
-            self.add_goal(goal)
+            self.add_goal(goal, path_to_report)
     
-    def add_goal(self, goal: list[str]):
+    def add_goal(self, goal: list[str], path_to_report: str):
         
         g = HelperGoalFrame(self)
         self.grid_columnconfigure(len(self.goals), weight=1)
@@ -435,6 +448,7 @@ class ScrollableGoalFrame(ctk.CTkScrollableFrame):
         g.goal_number.configure(text=f"GOAL {len(self.goals) + 1}")
         g.goal_name.configure(text=goal[0])
         g.goal_percent.insert("0.0", goal[1])
+        g.set_extra_data(path_to_report)
         # g.goal_extra_data.insert("0.0", goal[3])
         
         self.goals.append(g)
@@ -544,7 +558,9 @@ class ReportValidationPage(Page):
         
         for i in range(1, len(self.goals)):
             self.goals[i][1] = data[i - 1][0]
-            self.goals[i][3] = data[i - 1][1]
+            # self.goals[i][3] = data[i - 1][1]
+            with open(path.join(self.access_directory, "configs", f"{self.goals[i][0]}_extras.txt"), 'w') as file:
+                file.write(data[i - 1][1])
         
         write_csv(path.join(self.access_directory, "configs"), "goals.csv", self.goals)
     
@@ -648,7 +664,7 @@ class ReportValidationPage(Page):
             self.current_goal += 1
             self.current_sub_goal = 0
             if self.current_goal == len(self.goals):
-                self.goal_data.populate_goals(self.goals)
+                self.goal_data.populate_goals(self.goals, self.access_directory)
                 self.goal_data.show()
                 return
             self.goal_heading.configure(text=self.goals[self.current_goal][0])
