@@ -2,11 +2,11 @@
 
 {% block content %}
     <div class="goal is-size-3 has-text-centered has-text-white">GOAL {{ goal_num }}: {{ goal.goal }}</div>
-      <div class="fixed-grid has-4-cols" style="border: 1px solid black;">
+    <div class="fixed-grid has-4-cols" style="border: 1px solid black;">
         <div class="grid is-column-gap-0 is-row-gap-0 has-text-centered has-text-black">
-        {% for sub_goal in goal.sub_goals %}
-          {% include "sub-goal.html" %}
-        {% endfor %}
+            {% for sub_goal in goal.sub_goals %}
+                {% include "sub-goal.html" %}
+            {% endfor %}
         </div>
-      </div>
+    </div>
 {% endblock %}

@@ -1,0 +1,11 @@
+{% extends "page.html" %}
+
+{% block content %}
+    <div class="is-size-2 has-text-black">
+        <div class="is-size-1">KEY:</div>
+        <div><span style="font-weight: bold; color: #0000FF;">Blue:</span> Exceeds target (>120% of goal)</div>
+        <div><span style="font-weight: bold; color: #009900;">Green:</span> Meets target (80-120% of goal)</div>
+        <div><span style="font-weight: bold; color: #FF9900;">Yellow:</span> Is below target (60-80% of goal) or is of concern for other reasons</div>
+        <div><span style="font-weight: bold; color: #BB0000;">Red:</span> Is significantly below target (<60% of goal)</div>
+    </div>
+{% endblock %}
