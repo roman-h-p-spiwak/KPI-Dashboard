@@ -3,7 +3,7 @@ from modules.inputs import find_row, find_column
 from modules.gui import App
 
 
-# CONFIGS = get_app_configs(resource_path(), "configs.csv")
+CONFIGS = get_app_configs(resource_path(), "configs.csv")
 # print(resource_path(CONFIGS[find_row(CONFIGS, "home_directory")][1]))
 # HOME_DIRECTORY = resource_path(CONFIGS[find_row(CONFIGS, "home_directory")][1])
 
