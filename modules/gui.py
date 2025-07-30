@@ -372,8 +372,8 @@ class GoalFrame(Page):
         self.save_button = ctk.CTkButton(self.body_frame, text="Save Data", command=save)
         self.save_button.grid(row=1, column=0, sticky="ew")
         
-    def populate_goals(self, goals: list[list[str]], path_to_report: str):
-        self.goal_frame.add_goals(goals[1:], path_to_report)
+    def populate_goals(self, goals: list[list[str]], path_to_report: str, affix: str):
+        self.goal_frame.add_goals(goals[1:], path_to_report, affix)
         
     def save_data(self) -> list[tuple[str, str]]:
         return self.goal_frame.out_load_data()
@@ -410,16 +410,16 @@ class HelperGoalFrame(ctk.CTkFrame):
             print("ERROR")
             return "0.0"
     
-    def set_extra_data(self, path_to_report: str):
+    def set_extra_data(self, path_to_report: str, affix: str):
         
         extra_text: str = ""
         path_to_goal_extras: str = path.join(path_to_report, "configs")
         try:
-            with open(path.join(path_to_goal_extras, f"{self.goal_name.cget("text")}_extras.txt"), 'r') as file:
+            with open(path.join(path_to_goal_extras, f"{self.goal_name.cget("text")}_extras{affix}.txt"), 'r') as file:
                 extra_text = file.read()
         except FileNotFoundError:
-            print(f"\033[0;31mError: The file `{self.goal_name.cget("text")}_extras.txt` doesn't exist. Creating it.\033[0m")
-            create_csv(path_to_goal_extras, f"{self.goal_name.cget("text")}_extras.txt", [])
+            print(f"\033[0;31mError: The file `{self.goal_name.cget("text")}_extras{affix}.txt` doesn't exist. Creating it.\033[0m")
+            create_csv(path_to_goal_extras, f"{self.goal_name.cget("text")}_extras{affix}.txt", [])
         self.goal_extra_data.insert("0.0", extra_text)
     
     def get_extra_data(self) -> str:
@@ -433,13 +433,13 @@ class ScrollableGoalFrame(ctk.CTkScrollableFrame):
         self.grid_rowconfigure(0, weight=1)
         self.goals: list[HelperGoalFrame] = []
         
-    def add_goals(self, goals: list[list[str]], path_to_report: str):
+    def add_goals(self, goals: list[list[str]], path_to_report: str, affix: str):
         
         self.goals.clear()
         for goal in goals:
-            self.add_goal(goal, path_to_report)
+            self.add_goal(goal, path_to_report, affix)
     
-    def add_goal(self, goal: list[str], path_to_report: str):
+    def add_goal(self, goal: list[str], path_to_report: str, affix: str):
         
         g = HelperGoalFrame(self)
         self.grid_columnconfigure(len(self.goals), weight=1)
@@ -448,7 +448,7 @@ class ScrollableGoalFrame(ctk.CTkScrollableFrame):
         g.goal_number.configure(text=f"GOAL {len(self.goals) + 1}")
         g.goal_name.configure(text=goal[0])
         g.goal_percent.insert("0.0", goal[1])
-        g.set_extra_data(path_to_report)
+        g.set_extra_data(path_to_report, affix)
         # g.goal_extra_data.insert("0.0", goal[3])
         
         self.goals.append(g)
@@ -559,10 +559,10 @@ class ReportValidationPage(Page):
         for i in range(1, len(self.goals)):
             self.goals[i][1] = data[i - 1][0]
             # self.goals[i][3] = data[i - 1][1]
-            with open(path.join(self.access_directory, "configs", f"{self.goals[i][0]}_extras.txt"), 'w') as file:
+            with open(path.join(self.path_to_report, "configs", f"{self.goals[i][0]}_extras{self.affix}.txt"), 'w') as file:
                 file.write(data[i - 1][1])
         
-        write_csv(path.join(self.access_directory, "configs"), "goals.csv", self.goals)
+        write_csv(path.join(self.access_directory, "configs"), "goals.csv", self.goals) #TODO: The percentage shouldn't be stored in the year folder...
     
     def save_csv(self):
         
@@ -664,7 +664,7 @@ class ReportValidationPage(Page):
             self.current_goal += 1
             self.current_sub_goal = 0
             if self.current_goal == len(self.goals):
-                self.goal_data.populate_goals(self.goals, self.access_directory)
+                self.goal_data.populate_goals(self.goals, self.path_to_report, self.affix)
                 self.goal_data.show()
                 return
             self.goal_heading.configure(text=self.goals[self.current_goal][0])
@@ -1108,7 +1108,8 @@ class App(ctk.CTk):
         
         self.geometry("500x500")
         self.minsize(width=500, height=500)
-        self.title("CTk example")
+        self.title("KPI Dashboard")
+        self.iconbitmap(self.get_home_directory(path.join("static", "LSM.ico")))
         
             # Two Rows, One Column. Column expands horizontally. Only the bottom Row expands vertically.
         self.grid_rowconfigure(0, weight=0)

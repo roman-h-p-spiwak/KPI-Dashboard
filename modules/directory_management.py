@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 from re import findall, IGNORECASE
 from shutil import copy, copytree
-from modules.inputs import helper, read_csv, create_csv, modify_cell, find_row
+from modules.inputs import helper, read_csv, create_csv, modify_cell, find_row, create_file
 import modules.defaults as defaults
 from typing import Any
 from pathlib import Path
@@ -97,6 +97,15 @@ def new_report_version(path_to_report: str,
             name, ext = path.splitext(data_file.name)
             copy(data_file.path, path.join(path_to_data, f"{name}_{new_version}{ext}"))
     
+    goals = read_csv(path_to_configs, "goals.csv", error_code=f"{error_code}_")
+    for goal in goals[1:]:
+        copy_or_create(path_to_configs, 
+                       f"{goal[0]}_extras.txt", 
+                       path_to_configs, 
+                       f"{goal[0]}_extras_{new_version}.txt", 
+                       [], 
+                       error_code=f"{error_code}_")
+    
     return str(new_version)
     
 
@@ -128,9 +137,9 @@ def report_finalization(path_to_report: str,
         year_data_path = path.join(path_to_year_configs, "data.csv")
         report_data_path = path.join(path_to_report_configs, "data.csv")
         
-        goals = read_csv(path_to_year_configs, "goals.csv", error_code=f"{error_code}_")
-        for goal in goals[1:]:
-            copy(path.join(path_to_year_configs, f"{goal[0]}_extras.txt"), path.join(path_to_report_configs, f"{goal[0]}_extras.txt"))
+        # goals = read_csv(path_to_year_configs, "goals.csv", error_code=f"{error_code}_")
+        # for goal in goals[1:]:
+        #     copy(path.join(path_to_year_configs, f"{goal[0]}_extras.txt"), path.join(path_to_report_configs, f"{goal[0]}_extras.txt"))
         copy(year_goal_path, report_goal_path)
         copy(year_sub_goal_path, report_sub_goal_path)
         copy(year_data_path, report_data_path)
@@ -406,16 +415,17 @@ def copy_or_create(source_path: str,
                    destination_name: str, 
                    data: list,
                    error_code: str = "") -> bool:
+    error_code += "32"
     try:
         source = path.join(source_path, source_name)
         destination = path.join(destination_path, destination_name)
         copy(source, destination)
     except FileNotFoundError:
-        print(f"\033[0;31mError: The file `{source}` doesn't exist. Using default instead.\033[0m")
-        if not create_csv(destination_path, destination_name, data):
+        print(f"\033[0;31mError {error_code}: The file `{source}` doesn't exist. Using default instead.\033[0m")
+        if not create_csv(destination_path, destination_name, data, error_code=f"{error_code}_"):
             return False
     except Exception as e:
-        print(f"\033[0;31mError: An unexpected error {e} occurred while attempting to copy `{source}` to `{destination}`.\033[0m")
+        print(f"\033[0;31mError {error_code}: An unexpected error {e} occurred while attempting to copy `{source}` to `{destination}`.\033[0m")
         return False
     return True
     
@@ -460,7 +470,7 @@ def report_create(year_directory: str,
     path_to_year_goals = path.join(year_directory, "configs")
     goals = read_csv(path_to_year_goals, "goals.csv", error_code=f"{error_code}_")
     for goal in goals[1:]:
-        pass
+        create_file(month_configs_folder, f"{goal[0]}_extras.txt", error_code=f"{error_code}_")
     
     # copy_or_create(path.join(directory, "configs"), "data.csv", month_configs_folder, "data.csv", defaults.DATA)
     # copy_or_create(path.join(directory, "configs"), "goals.csv", month_configs_folder, "goals.csv", defaults.GOALS)

@@ -78,7 +78,7 @@ class Goal:
             print(f"\033[0;31mError: The goal `{self.goal}` has an improper percentage `{goal_content[1]}` resulting in {e}. Setting value to 50.\033[0m")
             self.percentage: float = 50.0
         self.sub_goals: list[SubGoals] = self.generate_sub_goals(helper(goal_content[2]), path_to_report, month, affix)
-        self.extra_text: list[str] = self.find_extra_text(path_to_report)
+        self.extra_text: list[str] = self.find_extra_text(path_to_report, affix)
     
     def generate_sub_goals(self, sub_goals_names: list[str], path_to_report: str, month: int, affix: str) -> list[SubGoals]:
 
@@ -93,12 +93,12 @@ class Goal:
 
         return sub_goals
     
-    def find_extra_text(self, path_to_report: str) -> list[str]:
+    def find_extra_text(self, path_to_report: str, affix: str) -> list[str]:
         
         extra_text: list[str] = []
         path_to_goal_extras: str = path.join(path_to_report, "configs")
         try:
-            with open(path.join(path_to_goal_extras, f"{self.goal}_extras.txt"), 'r') as file:
+            with open(path.join(path_to_goal_extras, f"{self.goal}_extras{affix}.txt"), 'r') as file:
                 for line in file:
                     extra_text.append(line)
         except Exception as e:
