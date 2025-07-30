@@ -377,6 +377,12 @@ class GoalFrame(Page):
         
     def save_data(self) -> list[tuple[str, str]]:
         return self.goal_frame.out_load_data()
+    
+    def has_changed(self) -> bool:
+        for goal in self.goal_frame.goals:
+            if goal.has_changed():
+                return True
+        return False
         
 
 class HelperGoalFrame(ctk.CTkFrame):
@@ -395,14 +401,22 @@ class HelperGoalFrame(ctk.CTkFrame):
         self.goal_name = ctk.CTkLabel(self, text="")
         self.goal_name.grid(row=1, column=0, sticky="ew")
         
+        self.goal_percent_num = ""
         self.goal_percent = ctk.CTkTextbox(self, height=80)
         # goal_percent.insert("0.0", goal[1])
         self.goal_percent.grid(row=2, column=0, sticky="ew")
         
+        self.extra_data = ""
         self.goal_extra_data = ctk.CTkTextbox(self, height=80)
         # goal_extra_data.insert("0.0", goal[3])
         self.goal_extra_data.grid(row=3, column=0, sticky="ew")
         
+    def update_percent(self):
+        self.goal_percent_num = self.get_percent()
+    
+    def update_extra_data(self):
+        self.extra_data = self.get_extra_data()
+    
     def get_percent(self) -> str:
         try:
             return str(float(self.goal_percent.get("0.0", "end-1c").strip()))
@@ -420,10 +434,14 @@ class HelperGoalFrame(ctk.CTkFrame):
         except FileNotFoundError:
             print(f"\033[0;31mError: The file `{self.goal_name.cget("text")}_extras{affix}.txt` doesn't exist. Creating it.\033[0m")
             create_csv(path_to_goal_extras, f"{self.goal_name.cget("text")}_extras{affix}.txt", [])
+        self.extra_data = extra_text
         self.goal_extra_data.insert("0.0", extra_text)
     
     def get_extra_data(self) -> str:
         return self.goal_extra_data.get("0.0", "end-1c").strip()
+    
+    def has_changed(self) -> bool:
+        return self.extra_data != self.get_extra_data() or self.goal_percent_num != self.get_percent()
 
 class ScrollableGoalFrame(ctk.CTkScrollableFrame):
     def __init__(self, master):
@@ -457,6 +475,8 @@ class ScrollableGoalFrame(ctk.CTkScrollableFrame):
         output: list[tuple[str, str]] = []
         for goal in self.goals:
             output.append((goal.get_percent(), goal.get_extra_data()))
+            goal.update_percent()
+            goal.update_extra_data()
         return output
 
 class ScrollableButtonFrame(ctk.CTkScrollableFrame):
@@ -673,7 +693,11 @@ class ReportValidationPage(Page):
             self.sub_goal.right_arrow.configure(state="normal")
         self.generate_sub_goal()
     
-    def generate_pdf(self):
+    def generate_pdf(self, quit_without_saving = False):
+        
+        if not quit_without_saving and self.goal_data.has_changed():
+            save_or_quit_goal(self.goal_data, self.save_goals, self.generate_pdf)
+            return
         
         report_finalization(self.path_to_report)
         
@@ -1485,3 +1509,34 @@ def save_or_quit_year(csv: CSVFrame, save: Callable, quit: Callable):
         save_button = ctk.CTkButton(buttons_frame, text="Save and Exit", command=quit_with_saving)
         save_button.grid(row=0, column=1, sticky="e")
         
+def save_or_quit_goal(goal: GoalFrame, save: Callable, quit: Callable):
+        def quit_without_saving():
+            save_or_quit_window.destroy()
+            quit(True)
+        def quit_with_saving():
+            save_or_quit_window.destroy()
+            save()
+            quit() 
+        save_or_quit_window = ctk.CTkToplevel()
+        save_or_quit_window.geometry("300x300")
+        save_or_quit_window.title("Unsaved Changes")
+        save_or_quit_window.resizable(False, False)
+        save_or_quit_window.grab_set()
+        
+        save_or_quit_window.grid_rowconfigure(0, weight=1)
+        save_or_quit_window.grid_rowconfigure(1, weight=1)
+        
+        unsaved_changes_label = ctk.CTkLabel(save_or_quit_window, text="You have unsaved changes.\nWould you like to save and exist, or exist without saving?")
+        unsaved_changes_label.grid(row=0, column=0, sticky="nsew")
+        
+        buttons_frame = ctk.CTkFrame(save_or_quit_window)
+        buttons_frame.grid(row=1, column=0, sticky="nsew")
+        buttons_frame.grid_rowconfigure(0, weight=0)
+        buttons_frame.grid_columnconfigure(0, weight=0)
+        buttons_frame.grid_columnconfigure(1, weight=0)
+        
+        quit_button = ctk.CTkButton(buttons_frame, text="Exit Without Saving", command=quit_without_saving)
+        quit_button.grid(row=0, column=0, sticky="w")
+        
+        save_button = ctk.CTkButton(buttons_frame, text="Save and Exit", command=quit_with_saving)
+        save_button.grid(row=0, column=1, sticky="e")
