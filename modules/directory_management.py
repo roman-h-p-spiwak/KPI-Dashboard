@@ -1,9 +1,11 @@
-from os import DirEntry, makedirs, path, scandir, startfile
+from os import DirEntry, makedirs, path, scandir
+import os
 import sys
 from pathlib import Path
 from re import findall, IGNORECASE
 from shutil import copy, copytree
 from modules.inputs import helper, read_csv, create_csv, modify_cell, find_row, create_file
+# from modules.objects import log
 import modules.defaults as defaults
 from typing import Any
 from pathlib import Path
@@ -75,7 +77,7 @@ def has_report_pdf_generated(path_to_report: str,
     configs = get_configs(path_to_report, error_code=f"{error_code}_")
     month_abr = configs[find_row(configs, "month", error_code=f"{error_code}_")][1]
     path_to_pdf: str = path.join(path_to_report, "outputs", "reports")
-    print(path.join(path_to_pdf, f"{month_abr} Report{affix}.pdf"))
+    # print(path.join(path_to_pdf, f"{month_abr} Report{affix}.pdf"))
     return path.exists(path.join(path_to_pdf, f"{month_abr} Report{affix}.pdf"))
 
 def new_report_version(path_to_report: str, 
@@ -155,8 +157,10 @@ def report_generation(path_to_report: str,
                       affix: str = "", 
                       error_code: str = "") -> bool:
     error_code += "21"
+    
+    template_dir = resource_path("templates")
     env = Environment(
-        loader=FileSystemLoader("templates"),
+        loader=FileSystemLoader(template_dir),
         autoescape=select_autoescape()
     )
     template = env.get_template("index.html")
@@ -170,18 +174,22 @@ def report_generation(path_to_report: str,
     HTML(string=template.render(
     year=year[1], 
     month=report_name.split(" ")[0], 
-    goals=goals),
+    goals=goals,
+    gradient=resource_path("static/gradient.png"),
+    indicator=resource_path("static/indicator.png"),
+    logo=resource_path("static/LSM.png"),
+    blank_background=resource_path("static/blank_background.png")),
      base_url=Path(".").resolve()).write_pdf(
     file_path,
     stylesheets=[
-        CSS(filename="static/style.css"),
-        CSS(filename="static/bulma.css")
+        CSS(filename=resource_path("static/style.css")),
+        CSS(filename=resource_path("static/bulma.css"))
         ])
     
     if system() == 'Darwin':       # macOS
         call(('open', file_path))
     elif system() == 'Windows':    # Windows
-        startfile(file_path)
+        os.startfile(file_path)
     else:                          # linux variants
         call(('xdg-open', file_path))
     
@@ -247,6 +255,7 @@ def verify_app_configs(data: list,
         
     except Exception as e:
         print(f"\033[0;31mError {error_code}: The data is formatted incorrectly, resulting in {e}.\033[0m")
+        log(f"\033[0;31mError {error_code}: The data is formatted incorrectly, resulting in {e}.\033[0m")
         return False
     return True
 
@@ -306,6 +315,7 @@ def report_index(directory: str,
                 sorted_reports[0] = report
             case _:
                 print(f"\033[0;31mError {error_code}: The report `{report}` does not exist.\033[0m")
+                log(f"\033[0;31mError {error_code}: The report `{report}` does not exist.\033[0m")
     output = []
     for report in sorted_reports:
         if report != ():
@@ -321,12 +331,15 @@ def directory_index(directory: str,
     error_code += "27"
     try:
         print(f"\033[0;32mSuccess: Accessed directory `{directory}` without error.\033[0m")
+        log(f"\033[0;32mSuccess: Accessed directory `{directory}` without error.\033[0m")
         return [(entry.path, entry.name) for entry in scandir(directory) if directory_check(entry, control)]
     except FileNotFoundError:
         print(f"\033[0;31mError {error_code}: The directory `{directory}` does not exist.\033[0m")
+        log(f"\033[0;31mError {error_code}: The directory `{directory}` does not exist.\033[0m")
         return [()]
     except PermissionError:
         print(f"\033[0;31mError {error_code}: Permission denied to access `{directory}`.\033[0m")
+        log(f"\033[0;31mError {error_code}: Permission denied to access `{directory}`.\033[0m")
         return [()]
 
 def directory_check(entry: DirEntry, 
@@ -345,8 +358,10 @@ def directory_check(entry: DirEntry,
             x = findall(r"[0-9]{4}-[0-9]{4} \b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) Report(?:_(?:[2-9]|(?:[1-9]+[0-9]+)))?\b Draft(?:_(?:[2-9]|(?:[1-9]+[0-9]+)))?\b", entry.name) #! Obsolete.
         case _:
             print(f"\033[0;31mError {error_code}: Passed control variable `{control}` doesn't exist.\033[0m")
+            log(f"\033[0;31mError {error_code}: Passed control variable `{control}` doesn't exist.\033[0m")
             return False
     print(f"\033[0;32mSuccess: Control variable `{control}` was properly passed.\033[0m")
+    log(f"\033[0;32mSuccess: Control variable `{control}` was properly passed.\033[0m")
     return len(x) == 1 and x[0] == entry.name
 
 def year_create(home_directory: str, 
@@ -404,6 +419,7 @@ def year_create(home_directory: str,
         return False
     
     print(f"\033[0;32mSuccess: The directory for the year `{year}` was created without error.\033[0m")
+    log(f"\033[0;32mSuccess: The directory for the year `{year}` was created without error.\033[0m")
     return True
 
 def year_next_year_insert(path_to_file: str, name_of_file: str, year: int):
@@ -422,10 +438,12 @@ def copy_or_create(source_path: str,
         copy(source, destination)
     except FileNotFoundError:
         print(f"\033[0;31mError {error_code}: The file `{source}` doesn't exist. Using default instead.\033[0m")
+        log(f"\033[0;31mError {error_code}: The file `{source}` doesn't exist. Using default instead.\033[0m")
         if not create_csv(destination_path, destination_name, data, error_code=f"{error_code}_"):
             return False
     except Exception as e:
         print(f"\033[0;31mError {error_code}: An unexpected error {e} occurred while attempting to copy `{source}` to `{destination}`.\033[0m")
+        log(f"\033[0;31mError {error_code}: An unexpected error {e} occurred while attempting to copy `{source}` to `{destination}`.\033[0m")
         return False
     return True
     
@@ -444,6 +462,7 @@ def report_create(year_directory: str,
         #     return False
         # month_folder = path.join(year_directory, f"{month} Report_{num}")
         print(f"\033[0;31mError {error_code}: The report `{month} Report` already exist.\033[0m")
+        log(f"\033[0;31mError {error_code}: The report `{month} Report` already exist.\033[0m")
         return False #TODO: The function that called this should display the error message to the user.
     
     month_configs_folder = path.join(month_folder, "configs")
@@ -487,10 +506,27 @@ def directory_create(directory: str,
     try:
         makedirs(directory, exist_ok=False)
         print(f"\033[0;32mSuccess: The directory `{directory}` was created without error.\033[0m")
+        log(f"\033[0;32mSuccess: The directory `{directory}` was created without error.\033[0m")
         return True
     except FileExistsError:
         print(f"\033[0;31mError {error_code}: The directory `{directory}` already exists.\033[0m")
+        log(f"\033[0;31mError {error_code}: The directory `{directory}` already exists.\033[0m")
         return False
     except Exception as e:
         print(f"\033[0;31mError {error_code}: An unexpected error {e} occurred while attempting to create directory `{directory}`.\033[0m")
+        log(f"\033[0;31mError {error_code}: An unexpected error {e} occurred while attempting to create directory `{directory}`.\033[0m")
         return False
+
+# def log(log: str):
+    # pass
+    # configs = get_app_configs(resource_path(), "configs.csv")
+    # home_dir = resource_path(configs[find_row(configs, "home_directory")][1])
+    # logs = path.join(home_dir, "logs")
+    
+    # with open(path.join(logs, "logs.txt"), 'a') as file:
+    #     file.write(f"{log}\n")
+
+# def create_log():
+    
+def log(log: str):
+    pass

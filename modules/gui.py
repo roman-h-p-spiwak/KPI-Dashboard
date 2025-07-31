@@ -422,6 +422,7 @@ class HelperGoalFrame(ctk.CTkFrame):
             return str(float(self.goal_percent.get("0.0", "end-1c").strip()))
         except:
             print("ERROR")
+            log("ERROR")
             return "0.0"
     
     def set_extra_data(self, path_to_report: str, affix: str):
@@ -433,6 +434,7 @@ class HelperGoalFrame(ctk.CTkFrame):
                 extra_text = file.read()
         except FileNotFoundError:
             print(f"\033[0;31mError: The file `{self.goal_name.cget("text")}_extras{affix}.txt` doesn't exist. Creating it.\033[0m")
+            log(f"\033[0;31mError: The file `{self.goal_name.cget("text")}_extras{affix}.txt` doesn't exist. Creating it.\033[0m")
             create_csv(path_to_goal_extras, f"{self.goal_name.cget("text")}_extras{affix}.txt", [])
         self.extra_data = extra_text
         self.goal_extra_data.insert("0.0", extra_text)
@@ -1540,3 +1542,5 @@ def save_or_quit_goal(goal: GoalFrame, save: Callable, quit: Callable):
         
         save_button = ctk.CTkButton(buttons_frame, text="Save and Exit", command=quit_with_saving)
         save_button.grid(row=0, column=1, sticky="e")
+def log(log: str):
+    pass

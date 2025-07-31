@@ -73,9 +73,11 @@ class Goal:
             self.percentage: float = float(goal_content[1])
         except ValueError:
             print(f"\033[0;31mError: The goal `{self.goal}` has a non-number percentage `{goal_content[1]}`. Setting value to 50.\033[0m")
+            log(f"\033[0;31mError: The goal `{self.goal}` has a non-number percentage `{goal_content[1]}`. Setting value to 50.\033[0m")
             self.percentage: float = 50.0
         except Exception as e:
             print(f"\033[0;31mError: The goal `{self.goal}` has an improper percentage `{goal_content[1]}` resulting in {e}. Setting value to 50.\033[0m")
+            log(f"\033[0;31mError: The goal `{self.goal}` has an improper percentage `{goal_content[1]}` resulting in {e}. Setting value to 50.\033[0m")
             self.percentage: float = 50.0
         self.sub_goals: list[SubGoals] = self.generate_sub_goals(helper(goal_content[2]), path_to_report, month, affix)
         self.extra_text: list[str] = self.find_extra_text(path_to_report, affix)
@@ -103,5 +105,16 @@ class Goal:
                     extra_text.append(line)
         except Exception as e:
             print(f"\033[0;31mError: {e}.\033[0m")
+            log(f"\033[0;31mError: {e}.\033[0m")
         return extra_text
     
+def log(log: str):
+    pass
+    # configs = get_app_configs(resource_path(), "configs.csv")
+    # home_dir = resource_path(configs[find_row(configs, "home_directory")][1])
+    # logs = path.join(home_dir, "logs")
+    
+    # with open(path.join(logs, "logs.txt"), 'a') as file:
+    #     file.write(f"{log}\n")
+
+# def create_log():

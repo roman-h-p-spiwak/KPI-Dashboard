@@ -2,6 +2,7 @@ from datetime import datetime
 from os import DirEntry, path, rename, remove
 from shutil import rmtree
 from typing import Any
+# from modules.objects import log
 
 #TODO: Make sure all the success and error statements don't have leading whitespace.
 
@@ -11,6 +12,7 @@ def check_csv(path_to_file: str,
     error_code += "0"
     if not path.isfile(path.join(path_to_file, name_of_file)):
         print(f"\033[0;31mError {error_code}: No such file `{name_of_file}` exists at `{path_to_file}`.\033[0m")
+        log(f"\033[0;31mError {error_code}: No such file `{name_of_file}` exists at `{path_to_file}`.\033[0m")
         return False
     return True
 
@@ -56,6 +58,7 @@ def read_csv(path_to_file: str,
             i += 1
             
     print(f"\033[0;32mSuccess: The file `{name_of_file}` was read without error at `{path_to_file}`.\033[0m")
+    log(f"\033[0;32mSuccess: The file `{name_of_file}` was read without error at `{path_to_file}`.\033[0m")
     return data
 
 def write_csv(path_to_file: str, 
@@ -74,6 +77,7 @@ def write_csv(path_to_file: str,
             file.write('\n')
         
     print(f"\033[0;32mSuccess: The file `{name_of_file}` at `{path_to_file}` was written without error.\033[0m")
+    log(f"\033[0;32mSuccess: The file `{name_of_file}` at `{path_to_file}` was written without error.\033[0m")
     return True
 
 def create_csv(path_to_file: str, 
@@ -100,11 +104,14 @@ def create_file(path_to_file: str,
                 num += 1
             if num == 100:
                 print(f"\033[0;31mError: One-Hundred instances of `{name_of_old_file}_XX_{name_of_file}` already exist at `{path_to_file}`.\033[0m")
+                log(f"\033[0;31mError: One-Hundred instances of `{name_of_old_file}_XX_{name_of_file}` already exist at `{path_to_file}`.\033[0m")
                 return False
             num_str_ins = f"_{num}"
         name_of_old_file += f"{num_str_ins}_{name_of_file}"
         rename(path.join(path_to_file, name_of_file), path.join(path_to_file, name_of_old_file))
         print(f"\033[0;32mSuccess: The file `{name_of_file}` was renamed to `{name_of_old_file}` at `{path_to_file}` without error.\033[0m")
+        log(f"\033[0;32mSuccess: The file `{name_of_file}` was renamed to `{name_of_old_file}` at `{path_to_file}` without error.\033[0m")
+        log(f"\033[0;32mSuccess: The file `{name_of_file}` was renamed to `{name_of_old_file}` at `{path_to_file}` without error.\033[0m")
     
     #? Is this a waste of resources? Opening and closing the file just to make it, before opening and closing the file to write to it?
     with open(path.join(path_to_file, name_of_file), "w") as file:
@@ -120,11 +127,14 @@ def delete_csv(path_to_file: str, error_code: str =""):
     if path.isfile(path_to_file):
         remove(path_to_file)
         print(f"\033[0;32mSuccess: The file `{path_to_file}` was successfully deleted without error.\033[0m")
+        log(f"\033[0;32mSuccess: The file `{path_to_file}` was successfully deleted without error.\033[0m")
     elif path.isdir(path_to_file):
         rmtree(path_to_file)
         print(f"\033[0;32mSuccess: The folder `{path_to_file}` was successfully deleted without error.\033[0m")
+        log(f"\033[0;32mSuccess: The folder `{path_to_file}` was successfully deleted without error.\033[0m")
     else:
         print(f"\033[0;31mError {error_code}: The path `{path_to_file}` wasn't deleted as it doesn't exist.\033[0m")
+        log(f"\033[0;31mError {error_code}: The path `{path_to_file}` wasn't deleted as it doesn't exist.\033[0m")
 
 def find_row(data: list[list], row: str, error_code: str = "") -> int:
     error_code += "6"
@@ -132,6 +142,7 @@ def find_row(data: list[list], row: str, error_code: str = "") -> int:
         if data[i][0] == row:
             return i
     print(f"\033[0;31mError {error_code}: The row `{row}` doesn't exist.\033[0m")
+    log(f"\033[0;31mError {error_code}: The row `{row}` doesn't exist.\033[0m")
     return -1
 
 def find_column(data: list, column: str, error_code: str = "") -> int:
@@ -140,6 +151,7 @@ def find_column(data: list, column: str, error_code: str = "") -> int:
         return data.index(column)
     except ValueError:
         print(f"\033[0;31mError {error_code}: The column `{column}` doesn't exist.\033[0m")
+        log(f"\033[0;31mError {error_code}: The column `{column}` doesn't exist.\033[0m")
         return -1
 
 def modify_cell(path_to_file: str, 
@@ -220,6 +232,7 @@ def find_targets(time: str,
     starting_row, ending_row = find_starting_row(targets, month, error_code=f"{error_code}_")
     if starting_row == -1:
         print(f"\033[0;31mError {error_code}: The target hasn't been initialized.\033[0m")
+        log(f"\033[0;31mError {error_code}: The target hasn't been initialized.\033[0m")
         return (0, 0)
     compared_value: float = float(targets[starting_row][1])
     displayed_valued: float = compared_value
@@ -304,3 +317,5 @@ def find_or_create_target_files(path_to_file: str,
             create_csv(directory, f"{row[0]}_targets.csv", [["date", row[1]]], error_code=f"{error_code}_")
         files.append((directory, f"{row[0]}_targets.csv"))
     return files
+def log(log: str):
+    pass

@@ -1,6 +1,6 @@
 def APP_CONFIGS() -> list[list[str]]:
     return [['config', 'value'], 
-            ['home_directory', '.testdata'],
+            ['home_directory', 'home_directory'],
             ['button_width', '40'],
             ['button_height', '40'],
             ['comp_year_color', '#CC0000'],
